@@ -15,20 +15,13 @@ limitations under the License.
 */
 
 /*
-Correct generation of audit events aids us in determining what's happening in our systems,
-doing forensic analysis on security incidents, as well as serving as evidence in court in
-case of a breach. Hence, why it's important for us to generate correct and accurate
-audit events.
 
-NIST SP-800-53 Revision 5.1:: Control AU-3
+The `AuditEvent` structure is used to represent an audit event.
+It provides the minimal information needed to audit an event, as well as
+a uniform format to persist the events in audit logs.
 
-Ensure that audit records contain information that establishes the following:
-a. What type of event occurred;
-b. When the event occurred;
-c. Where the event occurred;
-d. Source of the event;
-e. Outcome of the event; and
-f. Identity of any individuals, subjects, or objects/entities associated with the event.
+It is highly recommended to use the `NewAuditEvent` function to create
+audit events and set the required fields.
 */
 package auditevent
 
@@ -39,6 +32,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// AuditEvent represents an audit event.
 type AuditEvent struct {
 	Metadata EventMetadata `json:"metadata"`
 	// Type: Defines the type of event that occurred

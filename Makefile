@@ -6,11 +6,11 @@ GOOS=linux
 
 test: | lint
 	@echo Running unit tests...
-	@go test -cover -short -tags testtools ./...
+	@go test -cover -short ./...
 
 coverage:
 	@echo Generating coverage report...
-	@go test ./... -race -coverprofile=coverage.out -covermode=atomic -tags testtools -p 1
+	@go test ./... -race -coverprofile=coverage.out -covermode=atomic
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 

@@ -122,3 +122,11 @@ func (e *AuditEvent) WithData(data *json.RawMessage) *AuditEvent {
 	e.Data = data
 	return e
 }
+
+// WithDataFromString sets the data of the event from a string.
+// Note that validating that this is properly JSON-formatted
+// is the responsibility of the caller.
+func (e *AuditEvent) WithDataFromString(data string) *AuditEvent {
+	rawMsg := json.RawMessage(data)
+	return e.WithData(&rawMsg)
+}

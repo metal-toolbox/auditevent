@@ -88,7 +88,7 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 					"vendor": "ACME",
 				},
 				"test-lister-component",
-			).WithDataFromString(`{"scope": "invalid-scope"}`),
+			).WithDataFromString(`{"scope":"invalid-scope"}`),
 		},
 		{
 			"audit event with target and data",
@@ -107,7 +107,7 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 				"oidc-provider-component",
 			).WithTarget(map[string]string{
 				"path": "/token",
-			}).WithDataFromString(`{"scope": "valid-scope"}`),
+			}).WithDataFromString(`{"scope":"valid-scope"}`),
 		},
 	}
 
@@ -150,6 +150,7 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 			require.Equal(t, tc.expectedEvent.Subjects, gotEvent.Subjects, "subjects should match")
 			require.Equal(t, tc.expectedEvent.Component, gotEvent.Component, "component should match")
 			require.Equal(t, tc.expectedEvent.Target, gotEvent.Target, "target should match")
+			require.Equal(t, tc.expectedEvent.Data, gotEvent.Data, "data should match")
 		})
 	}
 }

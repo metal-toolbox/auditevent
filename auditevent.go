@@ -46,7 +46,10 @@ type AuditEvent struct {
 	// Greenwich Mean Time (GMT), or local time with an offset from UTC to satisfy
 	// NIST SP 800-53 requirement AU-8.
 	LoggedAt time.Time `json:"loggedAt"`
-	// Source: determines the source of the event
+	// Source: determines the source of the event.
+	// Normally, using the IP address of the client, or pod name is sufficient.
+	// One must be careful of the data that's added here as we don't want to
+	// leak Personally Identifiable Information.
 	Source EventSource `json:"source"`
 	// Outcome: determines whether the event was successful or not, e.g. successful login
 	// It may also determine if the event was approved or denied.

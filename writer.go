@@ -6,6 +6,8 @@ import (
 )
 
 // EventEncoder allows for encoding audit events.
+// The parameter to the `Encode` method is the audit event to encode
+// and it must accept pointer to an AuditEvent struct.
 type EventEncoder interface {
 	Encode(any) error
 }

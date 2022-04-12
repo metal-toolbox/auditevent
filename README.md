@@ -88,3 +88,73 @@ if err != nil {
 }
 e.WithData(jsonData)
 ```
+
+# Writing audit logs
+
+The base package comes with a utility structure called `auditevent.EventWriter`. The `EventWriter`'s
+purpose is to encode an audit event to whatever representation is needed. This could writing directly
+to a file, a UNIX socket, or even an HTTP server. The requirement is that the writer that's passed
+to the `EventWriter` structure **must** implement the `io.Writer` interface.
+
+Audit events also need to be encoded somehow, so an encoder must be passed to the `EventWriter`. An
+encoder **must** implement the `EventEncoder` interface that's made available in this package.
+
+The creation of an event writer would look as follows:
+
+```golang
+aew := auditevent.NewAuditEventWriter(writer, encoder)
+```
+
+Since JSON encoding is common and expected, there is a default implementation that assumes
+JSON encoding. It's may be used as follows:
+
+```golang
+aew := auditevent.NewDefaultAuditEventWriter(writer)
+```
+
+To write events to the `EventWriter` one can do so as follows:
+
+```golang
+err := aew.Write(eventToWrite)
+```
+
+# Gin Middleware
+
+As a useful utility to use this audit event structure, a gin-based middleware structure is available:
+`ginaudit.Middleware`. This structure allows one to set gin routes to log audit events to a
+specified `io.Writer` via the aforementioned `auditevent.EventWriter` structure.
+
+One would create a `ginaudit.Middleware` instance as follows:
+
+```golang
+mdw := ginaudit.NewMiddleware("my-test-component", eventwriter)
+```
+
+Given that JSON is a reasonable default, a utility function that defaults to using
+a JSON writer was implemented:
+
+```golang
+mdw := ginaudit.NewJSONMiddleware("my-test-component", writer)
+```
+
+Here, `writer` is an instance of an structure that implements the `io.Writer` interface.
+
+It is often the case that one must not start to process events until the audit logging
+capabilities are set up. For this, the following pattern is suggested:
+
+```golang
+fd, err := ginaudit.OpenAuditLogFileUntilSuccess(auditLogPath)
+if err != nil {
+    panic(err)
+}
+// The file descriptor shall be closed only if the gin server is shut down
+defer fd.Close()
+
+// Set up middleware with the file descriptor
+mdw := ginaudit.NewJSONMiddleware("my-test-component", fd)
+```
+
+The function `ginaudit.OpenAuditLogFileUntilSuccess` attempts to open the audit log
+file, and will block until it's available. This file may be created beforehand or it
+may be created by another process e.g. a sidecar container. It opens the file with
+`O_APPEND` which enables atomic writes as long as the audit events are less than 4096 bytes.

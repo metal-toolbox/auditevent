@@ -24,6 +24,10 @@ const (
 	retryInterval    = 100 * time.Millisecond
 )
 
+// OpenAuditLogFileUntilSuccess attempts to open a file for writing audit events until
+// it succeeds.
+// It assumes that audit events are less than 4096 bytes to ensure atomicity.
+// it takes a writer for the audit log.
 func OpenAuditLogFileUntilSuccess(path string) (*os.File, error) {
 	for {
 		// This is opened with the O_APPEND option to ensure
@@ -43,14 +47,20 @@ func OpenAuditLogFileUntilSuccess(path string) (*os.File, error) {
 	}
 }
 
-// NewMiddleware returns a new middleware instance with a default writer
-// It assumes that audit events are less than 4096 bytes to ensure atomicity.
-// it takes a writer for the audit log.
-func NewMiddleware(component string, w io.Writer) *Middleware {
+// NewMiddleware returns a new instance of audit Middleware.
+func NewMiddleware(component string, aew *auditevent.EventWriter) *Middleware {
 	return &Middleware{
 		component: component,
-		aew:       auditevent.NewDefaultAuditEventWriter(w),
+		aew:       aew,
 	}
+}
+
+// NewJSONMiddleware returns a new middleware instance with a default JSON writer.
+func NewJSONMiddleware(component string, w io.Writer) *Middleware {
+	return NewMiddleware(
+		component,
+		auditevent.NewDefaultAuditEventWriter(w),
+	)
 }
 
 func (m *Middleware) RegisterEventType(eventType, httpMethod, path string) {

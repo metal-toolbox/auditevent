@@ -137,7 +137,7 @@ func getNamedPipe(t *testing.T) string {
 func setFixtures(t *testing.T, w io.Writer) *gin.Engine {
 	t.Helper()
 
-	mdw := ginaudit.NewMiddleware(comp, w)
+	mdw := ginaudit.NewJSONMiddleware(comp, w)
 
 	r := gin.New()
 	r.Use(mdw.Audit())

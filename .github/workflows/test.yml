@@ -1,5 +1,5 @@
 ---
-name: Linting and Test
+name: test
 
 # Run for all pushes to main and pull requests when Go or YAML files change
 on:

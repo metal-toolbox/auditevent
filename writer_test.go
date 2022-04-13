@@ -3,7 +3,6 @@ package auditevent_test
 import (
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"os"
 	"syscall"
 	"testing"
@@ -17,12 +16,11 @@ import (
 func getNamedPipe(t *testing.T) string {
 	t.Helper()
 
-	dirName, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
+	dirName := t.TempDir()
 
 	pipeName := dirName + "/test.pipe"
 
-	err = syscall.Mkfifo(pipeName, 0o600)
+	err := syscall.Mkfifo(pipeName, 0o600)
 	require.NoError(t, err)
 
 	return pipeName

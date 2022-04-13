@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -123,12 +122,11 @@ func getTestCases() []testCase {
 func getNamedPipe(t *testing.T) string {
 	t.Helper()
 
-	dirName, err := ioutil.TempDir("", "")
-	require.NoError(t, err)
+	dirName := t.TempDir()
 
 	pipeName := dirName + "/test.pipe"
 
-	err = syscall.Mkfifo(pipeName, 0o600)
+	err := syscall.Mkfifo(pipeName, 0o600)
 	require.NoError(t, err)
 
 	return pipeName
@@ -292,8 +290,7 @@ func TestOpenAuditLogFileUntilSuccess(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	tmpdir, err := ioutil.TempDir("", "ginaudit")
-	require.NoError(t, err)
+	tmpdir := t.TempDir()
 	tmpfile := filepath.Join(tmpdir, "audit.log")
 
 	go func() {
@@ -325,8 +322,7 @@ func TestOpenAuditLogFileError(t *testing.T) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
-	tmpdir, err := ioutil.TempDir("", "ginaudit")
-	require.NoError(t, err)
+	tmpdir := t.TempDir()
 	tmpfile := filepath.Join(tmpdir, "audit.log")
 
 	go func() {

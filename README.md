@@ -1,6 +1,6 @@
 # `auditevent`
 
-[![Test](https://github.com/metal-toolbox/auditevent/actions/workflows/test.yml/badge.svg)](https://github.com/metal-toolbox/auditevent/actions/workflows/test.yml)
+[![Linting and Test](https://github.com/metal-toolbox/auditevent/actions/workflows/test.yml/badge.svg)](https://github.com/metal-toolbox/auditevent/actions/workflows/test.yml)
 [![coverage](https://codecov.io/gh/metal-toolbox/auditevent/branch/main/graph/badge.svg?token=GXV4UZ2JF6)](https://codecov.io/gh/metal-toolbox/auditevent)
 
 A small and flexible library to help you create audit events.

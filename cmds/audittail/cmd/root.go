@@ -35,6 +35,10 @@ const (
 // rootCmd represents the base command when called without any subcommands.
 var rootCmd = NewRootCmd()
 
+func GetCmd() *cobra.Command {
+	return rootCmd
+}
+
 func NewRootCmd() *cobra.Command {
 	c := &cobra.Command{
 		Use:   "audittail",

@@ -237,3 +237,10 @@ func TestFileTrailerUnknownErrorWhenTailing(t *testing.T) {
 	err := ft.tailFile(context.Background())
 	require.Error(t, err, "unexpected success")
 }
+
+func TestRootCmdSingletonGet(t *testing.T) {
+	t.Parallel()
+
+	c := GetCmd()
+	require.Equal(t, &rootCmd, &c, "GetCmd() should return the rootCmd singleton")
+}

@@ -97,7 +97,7 @@ func getTestCases() []testCase {
 		{
 			"user request fails with unregistered event type and known user from header",
 			auditevent.NewAuditEvent(
-				"POST:/fails-with-user-header",
+				"AlwaysBreaks",
 				auditevent.EventSource{
 					Type:  "IP",
 					Value: "127.0.0.1",
@@ -138,19 +138,23 @@ func setFixtures(t *testing.T, w io.Writer) *gin.Engine {
 	mdw := ginaudit.NewJSONMiddleware(comp, w)
 
 	r := gin.New()
+
+	// Writing to `fails-with-user-header` breaks the app
+	r.POST("/fails-with-user-header",
+		mdw.AuditWithType("AlwaysBreaks"),
+		func(ctx *gin.Context) {
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+		})
+
+	// Everything after this will be audited
 	r.Use(mdw.Audit())
 
 	// allowed user with registered event type
-	mdw.RegisterEventType("MyEventType", "GET", "/ok")
+	mdw.RegisterEventType("MyEventType", http.MethodGet, "/ok")
 	r.GET("/ok", func(c *gin.Context) {
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
 		c.JSON(http.StatusOK, "ok")
-	})
-
-	// Writing to `/ok` breaks the app
-	r.POST("/fails-with-user-header", func(ctx *gin.Context) {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
 	})
 
 	// denied with no user

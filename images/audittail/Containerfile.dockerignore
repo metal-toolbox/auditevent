@@ -1,0 +1,5 @@
+images/*
+.github/*
+.tools/*
+coverage.out
+*_test.go

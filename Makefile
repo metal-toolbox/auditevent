@@ -1,11 +1,27 @@
-all: lint test
-PHONY: test coverage lint golint clean vendor
+## Settings
 
+
+# Build Settings
 GOOS=linux
+
+# Utility settings
 TOOLS_DIR := .tools
 GOLANGCI_LINT_VERSION = v1.45.2
 
-.PHONY: test coverage lint golint vendor clean
+# Container build settings
+CONTAINER_BUILD_CMD?=docker build
+
+# Container settings
+CONTAINER_REPO?=ghcr.io/metal-toolbox
+AUDITTAIL_CONTAINER_IMAGE_NAME = $(CONTAINER_REPO)/audittail
+CONTAINER_TAG?=latest
+
+## Targets
+
+all: lint test
+PHONY: test coverage lint golint clean vendor
+
+.PHONY: test coverage lint golint vendor clean image audittail-image
 
 test: | lint
 	@echo Running unit tests...
@@ -32,6 +48,11 @@ clean:
 vendor:
 	@go mod download
 	@go mod tidy
+
+image: audittail-image
+
+audittail-image:
+	$(CONTAINER_BUILD_CMD) -f images/audittail/Containerfile . -t $(AUDITTAIL_CONTAINER_IMAGE_NAME):$(CONTAINER_TAG)
 
 # Tools setup
 $(TOOLS_DIR):

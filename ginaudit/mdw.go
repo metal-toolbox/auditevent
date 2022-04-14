@@ -67,7 +67,19 @@ func (m *Middleware) RegisterEventType(eventType, httpMethod, path string) {
 	m.eventTypeMap.Store(keyFromHTTPMethodAndPath(httpMethod, path), eventType)
 }
 
+// Audit returns a gin middleware that will audit the request.
+// This uses the a pre-registered type for the event (see RegisterEventType).
+// If no type is registered, the event type is the HTTP method and path.
 func (m *Middleware) Audit() gin.HandlerFunc {
+	return m.AuditWithType("")
+}
+
+// AuditWithType returns a gin middleware that will audit the request.
+// This uses the given type for the event.
+// If the type is empty, the event type will try to use a pre-registered
+// type (see RegisterEventType) and if it doesn't find it,
+// it'll use the HTTP method and path.
+func (m *Middleware) AuditWithType(t string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
 		path := c.Request.URL.Path
@@ -76,7 +88,7 @@ func (m *Middleware) Audit() gin.HandlerFunc {
 		c.Next()
 
 		event := auditevent.NewAuditEvent(
-			m.getEventType(method, path),
+			m.getEventType(t, method, path),
 			auditevent.EventSource{
 				Type: "IP",
 				// This already takes into account X-Forwarded-For and alike headers
@@ -94,7 +106,11 @@ func (m *Middleware) Audit() gin.HandlerFunc {
 	}
 }
 
-func (m *Middleware) getEventType(httpMethod, path string) string {
+func (m *Middleware) getEventType(preferredType, httpMethod, path string) string {
+	if preferredType != "" {
+		return preferredType
+	}
+
 	key := keyFromHTTPMethodAndPath(httpMethod, path)
 	rawEventType, ok := m.eventTypeMap.Load(key)
 	if ok {

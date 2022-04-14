@@ -87,3 +87,14 @@ r.GET("/foo", myGetHandler)
 mdw.RegisterEventType("CreateFoo", http.MethodPost, "/foo")
 r.POST("/foo", myGetHandler)
 ```
+
+It's also possible to both set the audit middleware for a specific path and
+set a specific audit event type for the path:
+
+```golang
+router.GET("/user/:name", mdw.AuditWithType("GetUserInfo"), userInfoHandler)
+```
+
+**NOTE**: It is not recommended to assign a default or shared event type
+to all events as audit events need to be uniquely identifiable
+actions.

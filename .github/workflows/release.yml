@@ -6,6 +6,7 @@ on:
       - v**
 
 env:
+  COSIGN_EXPERIMENTAL: 1
   AUDITTAIL_IMAGE_NAME: ghcr.io/metal-toolbox/audittail
 
 jobs:

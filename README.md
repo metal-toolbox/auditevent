@@ -2,6 +2,7 @@
 
 [![test](https://github.com/metal-toolbox/auditevent/workflows/test/badge.svg)](https://github.com/metal-toolbox/auditevent/actions/workflows/test.yml)
 [![coverage](https://codecov.io/gh/metal-toolbox/auditevent/branch/main/graph/badge.svg?token=GXV4UZ2JF6)](https://codecov.io/gh/metal-toolbox/auditevent)
+[![Release](https://github.com/metal-toolbox/auditevent/workflows/Release/badge.svg)](https://github.com/metal-toolbox/auditevent/actions/workflows/release.yml)
 
 A small and flexible library to help you create audit events.
 

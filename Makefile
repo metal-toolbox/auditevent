@@ -25,11 +25,11 @@ PHONY: test coverage lint golint clean vendor
 
 test: | lint
 	@echo Running unit tests...
-	@go test -timeout 30s -cover -short ./...
+	@go test -timeout 30s -cover -short  -tags testtools ./...
 
 coverage:
 	@echo Generating coverage report...
-	@go test -timeout 30s ./... -race -coverprofile=coverage.out -covermode=atomic
+	@go test -timeout 30s -tags testtools ./... -race -coverprofile=coverage.out -covermode=atomic
 	@go tool cover -func=coverage.out
 	@go tool cover -html=coverage.out
 

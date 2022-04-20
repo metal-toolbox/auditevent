@@ -1,0 +1,6 @@
+{
+  "go.buildTags": "testtools,integration",
+  "go.testFlags": [
+    "--short"
+  ]
+}

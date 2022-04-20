@@ -2,6 +2,9 @@
 run:
   concurrency: 6
   deadline: 5m
+  build-tags:
+    - testtools
+
 issues:
   exclude-rules:
     - linters:

@@ -1,3 +1,8 @@
+//go:build testtools
+// +build testtools
+
+// This package was tagged with testtools to ensure we don't
+// pollute the library/binary with constants and functions.
 package ginaudit_test
 
 import (
@@ -10,7 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"syscall"
 	"testing"
 	"time"
 
@@ -19,6 +23,7 @@ import (
 
 	"github.com/metal-toolbox/auditevent"
 	"github.com/metal-toolbox/auditevent/ginaudit"
+	"github.com/metal-toolbox/auditevent/internal/testtools"
 )
 
 const (
@@ -119,19 +124,6 @@ func getTestCases() []testCase {
 	}
 }
 
-func getNamedPipe(t *testing.T) string {
-	t.Helper()
-
-	dirName := t.TempDir()
-
-	pipeName := dirName + "/test.pipe"
-
-	err := syscall.Mkfifo(pipeName, 0o600)
-	require.NoError(t, err)
-
-	return pipeName
-}
-
 func setFixtures(t *testing.T, w io.Writer) *gin.Engine {
 	t.Helper()
 
@@ -172,17 +164,6 @@ func setFixtures(t *testing.T, w io.Writer) *gin.Engine {
 	return r
 }
 
-func setPipeReader(t *testing.T, namedPipe string) <-chan io.WriteCloser {
-	t.Helper()
-	rchan := make(chan io.WriteCloser)
-	go func(c chan<- io.WriteCloser) {
-		fd, err := ginaudit.OpenAuditLogFileUntilSuccess(namedPipe)
-		require.NoError(t, err)
-		c <- fd
-	}(rchan)
-	return rchan
-}
-
 func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
@@ -190,9 +171,9 @@ func TestMiddleware(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			p := getNamedPipe(t)
+			p := testtools.GetNamedPipe(t)
 
-			fdchan := setPipeReader(t, p)
+			fdchan := testtools.SetPipeReader(t, p)
 
 			f, err := os.Open(p)
 			require.NoError(t, err)
@@ -231,8 +212,8 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 	t.Parallel()
 
 	// Set up server with middleware
-	p := getNamedPipe(t)
-	c := setPipeReader(t, p)
+	p := testtools.GetNamedPipe(t)
+	c := testtools.SetPipeReader(t, p)
 
 	// set up other end of pipe
 	f, err := os.OpenFile(p, os.O_RDONLY|os.O_APPEND, 0o600)

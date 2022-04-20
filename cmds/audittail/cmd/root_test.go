@@ -18,64 +18,18 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/metal-toolbox/auditevent/internal/testtools"
 )
-
-func writeAuditEvent(t *testing.T, f *os.File, i int) {
-	t.Helper()
-	_, err := f.WriteString(fmt.Sprintf("audit-%d\n", i))
-	require.NoError(t, err, "Unexpected error writing audit event")
-}
-
-func generateAuditEvents(t *testing.T, path string, count int) {
-	t.Helper()
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
-	require.NoError(t, err, "unexpected error opening audit log file")
-	defer f.Close()
-
-	for i := 0; i < count; i++ {
-		writeAuditEvent(t, f, i)
-	}
-}
-
-// readAllAuditEvents reads all the events from the reader and fails if it times out
-// it will read 4 bytes at a time and count newlines to determine the amount of
-// audit events.
-func readAllAuditEvents(t *testing.T, reader io.Reader, expectedEvents int) {
-	t.Helper()
-	var count int
-	ticket := time.NewTicker(1 * time.Millisecond)
-
-	for {
-		select {
-		case <-ticket.C:
-			data := make([]byte, 4)
-			_, err := reader.Read(data)
-			// ignore EOF as the tail writer might not be ready with events
-			if len(data) == 0 || errors.Is(err, io.EOF) {
-				break
-			}
-			str := string(data)
-			count += strings.Count(str, "\n")
-			if count == expectedEvents {
-				return
-			}
-		case <-time.After(1 * time.Second):
-			require.Fail(t, "timeout. We didn't receive all the events")
-		}
-	}
-}
 
 func TestTailWithoutArguments(t *testing.T) {
 	t.Parallel()
@@ -120,7 +74,7 @@ func TestTailHappyPath(t *testing.T) {
 	wg.Add(1)
 	func() {
 		defer wg.Done()
-		generateAuditEvents(t, path, numEvents)
+		testtools.GenerateAuditEvents(t, path, numEvents)
 	}()
 
 	// Allow for cancellation
@@ -140,7 +94,7 @@ func TestTailHappyPath(t *testing.T) {
 	require.NoError(t, serr, "unexpected error")
 
 	// read all the events. Fails if it times out reading them
-	readAllAuditEvents(t, reader, numEvents)
+	testtools.ReadAllAuditEvents(t, reader, numEvents)
 
 	// cancel the command (this should clear the go routine)
 	cancel()

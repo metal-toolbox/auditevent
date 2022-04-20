@@ -19,27 +19,14 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"syscall"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/metal-toolbox/auditevent"
+	"github.com/metal-toolbox/auditevent/internal/testtools"
 )
-
-func getNamedPipe(t *testing.T) string {
-	t.Helper()
-
-	dirName := t.TempDir()
-
-	pipeName := dirName + "/test.pipe"
-
-	err := syscall.Mkfifo(pipeName, 0o600)
-	require.NoError(t, err)
-
-	return pipeName
-}
 
 func TestEventIsSuccessfullyWritten(t *testing.T) {
 	t.Parallel()
@@ -128,7 +115,7 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			nppath := getNamedPipe(t)
+			nppath := testtools.GetNamedPipe(t)
 
 			// writer
 			go func(eventToWrite *auditevent.AuditEvent) {

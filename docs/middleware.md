@@ -98,3 +98,8 @@ router.GET("/user/:name", mdw.AuditWithType("GetUserInfo"), userInfoHandler)
 **NOTE**: It is not recommended to assign a default or shared event type
 to all events as audit events need to be uniquely identifiable
 actions.
+
+### Audit event metrics
+
+`ginaudit.Middleware` instances may generate metrics for events and errors.
+For more information, [see the metrics documentation.](metrics.md)

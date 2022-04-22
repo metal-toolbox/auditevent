@@ -98,3 +98,8 @@ To write events to the `EventWriter` one can do so as follows:
 ```golang
 err := aew.Write(eventToWrite)
 ```
+
+#### Audit event metrics from writer
+
+`auditevent.EventWriter` instances may generate metrics for events and errors.
+For more information, [see the metrics documentation.](metrics.md)

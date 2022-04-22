@@ -36,6 +36,13 @@ which allows us to write audit events.
 
 [Read more.](docs/middleware.md)
 
+### Metrics
+
+The reference `auditevent` writer and the aforementioned Gin Middleware
+both have prometheus metric support baked in. 
+
+[Read more.](docs/metrics.md)
+
 ### `audittail`
 
 A simple utility to read audit logs and reliably output them.

@@ -17,6 +17,7 @@ package metrics_test
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"testing"
@@ -112,24 +113,28 @@ func TestPrometheusMetricsProvider_IncEvents(t *testing.T) {
 				case "regular":
 					switch m.GetName() {
 					case metrics.EventsTotalMetricsName:
-						metricToCompare = fmt.Sprintf("%s{component=%q}.*%d", metrics.EventsTotalMetricsName, component, totalEvents)
+						metricToCompare = fmt.Sprintf("%s{component=%q} %d\n",
+							metrics.EventsTotalMetricsName, component, totalEvents)
 					case metrics.ErrorsTotalMetricsName:
-						metricToCompare = fmt.Sprintf("%s{component=%q}.*%d", metrics.ErrorsTotalMetricsName, component, nSecondaryEvents)
+						metricToCompare = fmt.Sprintf("%s{component=%q} %d\n",
+							metrics.ErrorsTotalMetricsName, component, nSecondaryEvents)
 					default:
 						t.Errorf("unexpected metric name: %s", m.GetName())
 					}
 				case "error":
 					switch m.GetName() {
 					case metrics.EventsTotalMetricsName:
-						metricToCompare = fmt.Sprintf("%s{component=%q}.*%d", metrics.EventsTotalMetricsName, component, nSecondaryEvents)
+						metricToCompare = fmt.Sprintf("%s{component=%q} %d\n",
+							metrics.EventsTotalMetricsName, component, nSecondaryEvents)
 					case metrics.ErrorsTotalMetricsName:
-						metricToCompare = fmt.Sprintf("%s{component=%q}.*%d", metrics.ErrorsTotalMetricsName, component, totalEvents)
+						metricToCompare = fmt.Sprintf("%s{component=%q} %d\n",
+							metrics.ErrorsTotalMetricsName, component, totalEvents)
 					default:
 						t.Errorf("unexpected metric name: %s", m.GetName())
 					}
 				}
 
-				require.Regexp(t, metricToCompare, str)
+				require.Regexp(t, regexp.MustCompile(metricToCompare), str)
 			}
 		})
 	}

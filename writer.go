@@ -18,6 +18,10 @@ package auditevent
 import (
 	"encoding/json"
 	"io"
+
+	"github.com/prometheus/client_golang/prometheus"
+
+	"github.com/metal-toolbox/auditevent/metrics"
 )
 
 // EventEncoder allows for encoding audit events.
@@ -32,6 +36,7 @@ type EventEncoder interface {
 type EventWriter struct {
 	w   io.Writer
 	enc EventEncoder
+	mts *metrics.PrometheusMetricsProvider
 }
 
 // AuditEventEncoderJSON is an encoder that encodes audit events
@@ -41,10 +46,44 @@ func NewDefaultAuditEventWriter(w io.Writer) *EventWriter {
 	return NewAuditEventWriter(w, enc)
 }
 
+// NewAuditEventWriter is an encoder that encodes audit events
+// using the given encoder.
 func NewAuditEventWriter(w io.Writer, enc EventEncoder) *EventWriter {
-	return &EventWriter{w: w, enc: enc}
+	return &EventWriter{w: w, enc: enc, mts: nil}
 }
 
+// WithPrometheusMetricsForRegisterer adds prometheus metrics to this writer
+// using the given prometheus registerer. It returns the writer itself for ease
+// of use as the Builder pattern.
+func (w *EventWriter) WithPrometheusMetricsForRegisterer(
+	component string,
+	pr prometheus.Registerer,
+) *EventWriter {
+	w.mts = metrics.NewPrometheusMetricsProviderForRegisterer(component, pr)
+	return w
+}
+
+// WithPrometheusMetricsForRegisterer adds prometheus metrics to this writer
+// using the default prometheus registerer (which is prometheus.DefaultRegisterer ).
+// It returns the writer itself for ease of use as the Builder pattern.
+func (w *EventWriter) WithPrometheusMetrics(component string) *EventWriter {
+	w.mts = metrics.NewPrometheusMetricsProvider(component)
+	return w
+}
+
+// Write writes an audit event to the writer.
 func (w *EventWriter) Write(e *AuditEvent) error {
-	return w.enc.Encode(e)
+	err := w.enc.Encode(e)
+
+	// We only increment the metrics if the
+	// provider is available and not nil
+	if w.mts != nil {
+		if err == nil {
+			w.mts.IncEvents()
+		} else {
+			w.mts.IncErrors()
+		}
+	}
+
+	return err
 }

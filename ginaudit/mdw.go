@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/metal-toolbox/auditevent"
 )
@@ -63,6 +64,21 @@ func NewJSONMiddleware(component string, w io.Writer) *Middleware {
 	)
 }
 
+// WithPrometheusMetrics enables prometheus metrics for this middleware instance
+// using the default prometheus registerer (prometheus.DefaultRegisterer).
+func (m *Middleware) WithPrometheusMetrics() *Middleware {
+	m.aew.WithPrometheusMetrics(m.component)
+	return m
+}
+
+// WithPrometheusMetricsForRegisterer enables prometheus metrics for this middleware instance
+// using the default prometheus registerer (prometheus.DefaultRegisterer).
+func (m *Middleware) WithPrometheusMetricsForRegisterer(pr prometheus.Registerer) *Middleware {
+	m.aew.WithPrometheusMetricsForRegisterer(m.component, pr)
+	return m
+}
+
+// RegisterEventType registers an audit event type for a given HTTP method and path.
 func (m *Middleware) RegisterEventType(eventType, httpMethod, path string) {
 	m.eventTypeMap.Store(keyFromHTTPMethodAndPath(httpMethod, path), eventType)
 }

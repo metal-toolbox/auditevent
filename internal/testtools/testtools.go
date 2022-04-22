@@ -101,3 +101,14 @@ func ReadAllAuditEvents(t *testing.T, reader io.Reader, expectedEvents int) {
 		}
 	}
 }
+
+// ErrorWriter is a writer that always returns an error.
+type ErrorWriter struct{}
+
+func NewErrorWriter() io.Writer {
+	return &ErrorWriter{}
+}
+
+func (e *ErrorWriter) Write(p []byte) (n int, err error) {
+	return 0, fmt.Errorf("error")
+}

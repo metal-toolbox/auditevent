@@ -17,12 +17,13 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	"github.com/metal-toolbox/auditevent/internal/testtools"
 )
 
 func TestInit(t *testing.T) {
@@ -112,12 +113,6 @@ func TestInitTailFileFailsIfItCantCreateFIFO(t *testing.T) {
 	require.Empty(t, buf.String(), "It should return an error and not write to stdout/err")
 }
 
-type errorWriter struct{}
-
-func (e *errorWriter) Write(p []byte) (n int, err error) {
-	return 0, fmt.Errorf("error")
-}
-
 func TestInitTailFileFailsToWriteSuccess(t *testing.T) {
 	t.Parallel()
 
@@ -128,7 +123,7 @@ func TestInitTailFileFailsToWriteSuccess(t *testing.T) {
 	c.AddCommand(initCmd)
 
 	// Create error from output
-	ew := &errorWriter{}
+	ew := testtools.NewErrorWriter()
 	c.SetOutput(ew)
 	initCmd.SetOutput(ew)
 

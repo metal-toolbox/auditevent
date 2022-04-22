@@ -17,15 +17,21 @@ package auditevent_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
+	"regexp"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/expfmt"
 	"github.com/stretchr/testify/require"
 
 	"github.com/metal-toolbox/auditevent"
 	"github.com/metal-toolbox/auditevent/internal/testtools"
+	"github.com/metal-toolbox/auditevent/metrics"
 )
 
 func TestEventIsSuccessfullyWritten(t *testing.T) {
@@ -153,4 +159,109 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 			require.Equal(t, tc.expectedEvent.Data, gotEvent.Data, "data should match")
 		})
 	}
+}
+
+func TestEventMetrics(t *testing.T) {
+	t.Parallel()
+
+	var buf strings.Builder
+	pr := prometheus.NewRegistry()
+	w := auditevent.NewDefaultAuditEventWriter(
+		&buf).WithPrometheusMetricsForRegisterer("test", pr)
+	err := w.Write(
+		auditevent.NewAuditEvent(
+			"UserLogin",
+			auditevent.EventSource{
+				Type:  "IP",
+				Value: "127.0.0.1",
+			},
+			auditevent.OutcomeSucceeded,
+			map[string]string{
+				"username": "ozz",
+			},
+			"test-login-component",
+		),
+	)
+	require.NoError(t, err, "writing event should succeed")
+
+	gatheredmetrics, err := pr.Gather()
+	require.NoError(t, err)
+	require.Equal(t, len(gatheredmetrics), 1, "should have gathered metrics")
+
+	for _, m := range gatheredmetrics {
+		var buf strings.Builder
+		_, fmterr := expfmt.MetricFamilyToText(&buf, m)
+		require.NoError(t, fmterr)
+		str := buf.String()
+		var metricToCompare string
+
+		switch m.GetName() {
+		case metrics.EventsTotalMetricsName:
+			metricToCompare = fmt.Sprintf(`%s{component=%q} %d\n`, metrics.EventsTotalMetricsName, "test", 1)
+		case metrics.ErrorsTotalMetricsName:
+			t.Errorf("unexpected error metric name: %s", m.GetName())
+		default:
+			t.Errorf("unexpected metric name: %s", m.GetName())
+		}
+
+		require.Regexp(t, regexp.MustCompile(metricToCompare), str)
+	}
+}
+
+func TestErrorMetrics(t *testing.T) {
+	t.Parallel()
+
+	ew := testtools.NewErrorWriter()
+	pr := prometheus.NewRegistry()
+	w := auditevent.NewDefaultAuditEventWriter(
+		ew).WithPrometheusMetricsForRegisterer("test", pr)
+	err := w.Write(
+		auditevent.NewAuditEvent(
+			"UserLogin",
+			auditevent.EventSource{
+				Type:  "IP",
+				Value: "127.0.0.1",
+			},
+			auditevent.OutcomeSucceeded,
+			map[string]string{
+				"username": "ozz",
+			},
+			"test-login-component",
+		),
+	)
+	require.Error(t, err, "writing event should error out")
+
+	gatheredmetrics, err := pr.Gather()
+	require.NoError(t, err)
+	require.Equal(t, len(gatheredmetrics), 1, "should have gathered metrics")
+
+	for _, m := range gatheredmetrics {
+		var buf strings.Builder
+		_, fmterr := expfmt.MetricFamilyToText(&buf, m)
+		require.NoError(t, fmterr)
+		str := buf.String()
+		var metricToCompare string
+
+		switch m.GetName() {
+		case metrics.EventsTotalMetricsName:
+			t.Errorf("unexpected event metric name: %s", m.GetName())
+		case metrics.ErrorsTotalMetricsName:
+			metricToCompare = fmt.Sprintf(`%s{component=%q} %d\n`, metrics.ErrorsTotalMetricsName, "test", 1)
+		default:
+			t.Errorf("unexpected metric name: %s", m.GetName())
+		}
+
+		require.Regexp(t, regexp.MustCompile(metricToCompare), str)
+	}
+}
+
+func TestCantRegisterMultipleTimesToSamePrometheus(t *testing.T) {
+	t.Parallel()
+
+	var buf strings.Builder
+	auditevent.NewDefaultAuditEventWriter(&buf).WithPrometheusMetrics("test")
+
+	require.Panics(t, func() {
+		auditevent.NewDefaultAuditEventWriter(&buf).WithPrometheusMetrics("test")
+	})
 }

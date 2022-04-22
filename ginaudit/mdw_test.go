@@ -9,21 +9,27 @@ import (
 	"bufio"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/common/expfmt"
 	"github.com/stretchr/testify/require"
 
 	"github.com/metal-toolbox/auditevent"
 	"github.com/metal-toolbox/auditevent/ginaudit"
 	"github.com/metal-toolbox/auditevent/internal/testtools"
+	"github.com/metal-toolbox/auditevent/metrics"
 )
 
 const (
@@ -124,10 +130,14 @@ func getTestCases() []testCase {
 	}
 }
 
-func setFixtures(t *testing.T, w io.Writer) *gin.Engine {
+func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) *gin.Engine {
 	t.Helper()
 
 	mdw := ginaudit.NewJSONMiddleware(comp, w)
+
+	if pr != nil {
+		mdw.WithPrometheusMetricsForRegisterer(pr)
+	}
 
 	r := gin.New()
 
@@ -182,7 +192,7 @@ func TestMiddleware(t *testing.T) {
 			pfd := <-fdchan
 			defer pfd.Close()
 
-			r := setFixtures(t, pfd)
+			r := setFixtures(t, pfd, nil)
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
 			for k, v := range tc.headers {
@@ -223,7 +233,9 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 	// receive pipe reader file descriptor
 	pfd := <-c
 
-	r := setFixtures(t, pfd)
+	pr := prometheus.NewRegistry()
+
+	r := setFixtures(t, pfd, pr)
 
 	tcs := getTestCases()
 
@@ -267,6 +279,29 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 
 	// verify we didn't loose audit logs
 	require.Equal(t, nreqs, numlines, "number of events should match")
+
+	gatheredmetrics, err := pr.Gather()
+	require.NoError(t, err)
+	require.Greater(t, len(gatheredmetrics), 0, "should have gathered metrics")
+
+	for _, m := range gatheredmetrics {
+		var buf strings.Builder
+		_, fmterr := expfmt.MetricFamilyToText(&buf, m)
+		require.NoError(t, fmterr)
+		str := buf.String()
+		var metricToCompare string
+
+		switch m.GetName() {
+		case metrics.EventsTotalMetricsName:
+			metricToCompare = fmt.Sprintf(`%s{component=%q} %d\n`, metrics.EventsTotalMetricsName, comp, numlines)
+		case metrics.ErrorsTotalMetricsName:
+			t.Errorf("unexpected error metric name: %s", m.GetName())
+		default:
+			t.Errorf("unexpected metric name: %s", m.GetName())
+		}
+
+		require.Regexp(t, regexp.MustCompile(metricToCompare), str)
+	}
 }
 
 func TestOpenAuditLogFileUntilSuccess(t *testing.T) {
@@ -329,4 +364,15 @@ func TestOpenAuditLogFileError(t *testing.T) {
 
 	err = os.Remove(tmpfile)
 	require.NoError(t, err)
+}
+
+func TestCantRegisterMultipleTimesToSamePrometheus(t *testing.T) {
+	t.Parallel()
+
+	var buf strings.Builder
+	ginaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
+
+	require.Panics(t, func() {
+		ginaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
+	})
 }

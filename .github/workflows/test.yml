@@ -36,7 +36,6 @@ jobs:
 
   build-image:
     name: build-image
-    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 

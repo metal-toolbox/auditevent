@@ -25,7 +25,7 @@ It is often the case that one must not start to process events until the audit l
 capabilities are set up. For this, the following pattern is suggested:
 
 ```golang
-fd, err := ginaudit.OpenAuditLogFileUntilSuccess(auditLogPath)
+fd, err := helpers.OpenAuditLogFileUntilSuccess(auditLogPath)
 if err != nil {
     panic(err)
 }
@@ -36,7 +36,7 @@ defer fd.Close()
 mdw := ginaudit.NewJSONMiddleware("my-test-component", fd)
 ```
 
-The function `ginaudit.OpenAuditLogFileUntilSuccess` attempts to open the audit log
+The function `helpers.OpenAuditLogFileUntilSuccess` attempts to open the audit log
 file, and will block until it's available. This file may be created beforehand or it
 may be created by another process e.g. a sidecar container. It opens the file with
 `O_APPEND` which enables atomic writes as long as the audit events are less than 4096 bytes.

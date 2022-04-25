@@ -30,7 +30,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/metal-toolbox/auditevent/ginaudit"
+	"github.com/metal-toolbox/auditevent/helpers"
 )
 
 const (
@@ -63,7 +63,7 @@ func SetPipeReader(t *testing.T, namedPipe string) <-chan io.WriteCloser {
 	t.Helper()
 	rchan := make(chan io.WriteCloser)
 	go func(c chan<- io.WriteCloser) {
-		fd, err := ginaudit.OpenAuditLogFileUntilSuccess(namedPipe)
+		fd, err := helpers.OpenAuditLogFileUntilSuccess(namedPipe)
 		require.NoError(t, err)
 		c <- fd
 	}(rchan)

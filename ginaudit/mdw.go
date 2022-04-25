@@ -19,9 +19,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"sync"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,34 +31,6 @@ type Middleware struct {
 	component    string
 	aew          *auditevent.EventWriter
 	eventTypeMap sync.Map
-}
-
-const (
-	ownerGroupAccess = 0o640
-	retryInterval    = 100 * time.Millisecond
-)
-
-// OpenAuditLogFileUntilSuccess attempts to open a file for writing audit events until
-// it succeeds.
-// It assumes that audit events are less than 4096 bytes to ensure atomicity.
-// it takes a writer for the audit log.
-func OpenAuditLogFileUntilSuccess(path string) (*os.File, error) {
-	for {
-		// This is opened with the O_APPEND option to ensure
-		// atomicity of writes. This is important to ensure
-		// we can concurrently write to the file and not block
-		// the server's main loop.
-		fd, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND, ownerGroupAccess)
-		if err != nil {
-			if os.IsNotExist(err) {
-				time.Sleep(retryInterval)
-				continue
-			}
-			// Not being able to write audit log events is a fatal error
-			return nil, err
-		}
-		return fd, nil
-	}
 }
 
 // NewMiddleware returns a new instance of audit Middleware.

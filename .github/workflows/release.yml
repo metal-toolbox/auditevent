@@ -73,7 +73,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.1.0
+        uses: sigstore/cosign-installer@v2.2.1
         with:
           cosign-release: v1.7.2
 
@@ -104,7 +104,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.1.0
+        uses: sigstore/cosign-installer@v2.2.1
         with:
           cosign-release: v1.7.2
 
@@ -138,7 +138,7 @@ jobs:
 
     steps:
       - name: Install cosign
-        uses: sigstore/cosign-installer@v2.1.0
+        uses: sigstore/cosign-installer@v2.2.1
         with:
           cosign-release: v1.7.2
 

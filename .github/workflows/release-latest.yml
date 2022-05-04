@@ -6,13 +6,6 @@ on:
       - main
 
 jobs:
-  container-main:
-    uses: metal-toolbox/container-push/.github/workflows/container-push.yml@main
-    with:
-      name: audittail
-      tag: ${GITHUB_REF_NAME}
-      dockerfile_path: images/audittail/Containerfile
-
   # Push to latest
   container-push-latest:
     uses: metal-toolbox/container-push/.github/workflows/container-push.yml@main

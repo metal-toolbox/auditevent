@@ -18,7 +18,6 @@ package ginaudit
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -28,16 +27,18 @@ import (
 )
 
 type Middleware struct {
-	component    string
-	aew          *auditevent.EventWriter
-	eventTypeMap sync.Map
+	component      string
+	aew            *auditevent.EventWriter
+	eventTypeMap   sync.Map
+	outcomeHandler OutcomeHandler
 }
 
 // NewMiddleware returns a new instance of audit Middleware.
 func NewMiddleware(component string, aew *auditevent.EventWriter) *Middleware {
 	return &Middleware{
-		component: component,
-		aew:       aew,
+		component:      component,
+		aew:            aew,
+		outcomeHandler: GetOutcomeDefault,
 	}
 }
 
@@ -60,6 +61,11 @@ func (m *Middleware) WithPrometheusMetrics() *Middleware {
 // using the default prometheus registerer (prometheus.DefaultRegisterer).
 func (m *Middleware) WithPrometheusMetricsForRegisterer(pr prometheus.Registerer) *Middleware {
 	m.aew.WithPrometheusMetricsForRegisterer(m.component, pr)
+	return m
+}
+
+func (m *Middleware) WithOutcomeHandler(handler OutcomeHandler) *Middleware {
+	m.outcomeHandler = handler
 	return m
 }
 
@@ -95,7 +101,7 @@ func (m *Middleware) AuditWithType(t string) gin.HandlerFunc {
 				// This already takes into account X-Forwarded-For and alike headers
 				Value: c.ClientIP(),
 			},
-			m.getOutcome(c),
+			m.outcomeHandler(c),
 			m.getSubject(c),
 			m.component,
 		).WithTarget(map[string]string{
@@ -121,17 +127,6 @@ func (m *Middleware) getEventType(preferredType, httpMethod, path string) string
 		}
 	}
 	return key
-}
-
-func (m *Middleware) getOutcome(c *gin.Context) string {
-	status := c.Writer.Status()
-	if status >= http.StatusBadRequest && status < http.StatusInternalServerError {
-		return auditevent.OutcomeDenied
-	}
-	if status >= http.StatusInternalServerError {
-		return auditevent.OutcomeFailed
-	}
-	return auditevent.OutcomeSucceeded
 }
 
 func (m *Middleware) getSubject(c *gin.Context) map[string]string {

@@ -144,7 +144,7 @@ func getTestCases() []testCase {
 	}
 }
 
-func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) *gin.Engine {
+func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) (*gin.Engine, *ginaudit.Middleware) {
 	t.Helper()
 
 	mdw := ginaudit.NewJSONMiddleware(comp, w)
@@ -185,7 +185,7 @@ func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) *gin.Engin
 		c.JSON(http.StatusForbidden, "denied")
 	})
 
-	return r
+	return r, mdw
 }
 
 func TestMiddleware(t *testing.T) {
@@ -206,7 +206,7 @@ func TestMiddleware(t *testing.T) {
 			pfd := <-fdchan
 			defer pfd.Close()
 
-			r := setFixtures(t, pfd, nil)
+			r, _ := setFixtures(t, pfd, nil)
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
 			for k, v := range tc.headers {
@@ -249,7 +249,7 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 
 	pr := prometheus.NewRegistry()
 
-	r := setFixtures(t, pfd, pr)
+	r, _ := setFixtures(t, pfd, pr)
 
 	tcs := getTestCases()
 
@@ -327,4 +327,55 @@ func TestCantRegisterMultipleTimesToSamePrometheus(t *testing.T) {
 	require.Panics(t, func() {
 		ginaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
 	})
+}
+
+// Tests the that the middleware generates events with a custom
+// outcome handler.
+func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range getTestCases() {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			p := testtools.GetNamedPipe(t)
+
+			fdchan := testtools.SetPipeReader(t, p)
+
+			f, err := os.Open(p)
+			require.NoError(t, err)
+
+			// receive pipe reader file descriptor
+			pfd := <-fdchan
+			defer pfd.Close()
+
+			r, mdw := setFixtures(t, pfd, nil)
+			mdw.WithOutcomeHandler(func(c *gin.Context) string {
+				return "custom"
+			})
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
+			for k, v := range tc.headers {
+				req.Header.Set(k, v)
+			}
+			r.ServeHTTP(w, req)
+
+			// wait for the event to be written
+			gotEvent := &auditevent.AuditEvent{}
+			dec := json.NewDecoder(f)
+			decErr := dec.Decode(gotEvent)
+			require.NoError(t, decErr)
+
+			require.Equal(t, tc.expectedEvent.Type, gotEvent.Type, "type should match")
+			require.True(t, gotEvent.LoggedAt.Before(time.Now()), "logging time should be before now")
+			require.Equal(t, tc.expectedEvent.Source.Type, gotEvent.Source.Type, "source type should match")
+			require.Equal(t, tc.expectedEvent.Subjects, gotEvent.Subjects, "subjects should match")
+			require.Equal(t, tc.expectedEvent.Component, gotEvent.Component, "component should match")
+			require.Equal(t, tc.expectedEvent.Target, gotEvent.Target, "target should match")
+			require.Equal(t, tc.expectedEvent.Data, gotEvent.Data, "data should match")
+
+			// This is the custom outcome we set above
+			require.Equal(t, "custom", gotEvent.Outcome, "outcome should match")
+		})
+	}
 }

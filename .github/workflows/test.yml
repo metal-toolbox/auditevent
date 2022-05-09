@@ -45,7 +45,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./images/audittail/Containerfile
+          file: ./images/audittail/Dockerfile
           push: false
           tags: gchr.io/metal-toolbox/audittail:latest
 

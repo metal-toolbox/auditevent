@@ -12,4 +12,4 @@ jobs:
     with:
       name: audittail
       tag: latest
-      dockerfile_path: images/audittail/Containerfile
+      dockerfile_path: images/audittail/Dockerfile

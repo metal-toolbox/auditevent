@@ -52,7 +52,7 @@ vendor:
 image: audittail-image
 
 audittail-image:
-	$(CONTAINER_BUILD_CMD) -f images/audittail/Containerfile . -t $(AUDITTAIL_CONTAINER_IMAGE_NAME):$(CONTAINER_TAG)
+	$(CONTAINER_BUILD_CMD) -f images/audittail/Dockerfile . -t $(AUDITTAIL_CONTAINER_IMAGE_NAME):$(CONTAINER_TAG)
 
 # Tools setup
 $(TOOLS_DIR):

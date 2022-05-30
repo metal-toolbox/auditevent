@@ -16,8 +16,13 @@ limitations under the License.
 package helpers
 
 import (
+	"fmt"
 	"os"
 	"time"
+
+	"github.com/go-logr/logr"
+	"github.com/go-logr/zapr"
+	"go.uber.org/zap"
 )
 
 const (
@@ -29,7 +34,21 @@ const (
 // it succeeds.
 // It assumes that audit events are less than 4096 bytes to ensure atomicity.
 // it takes a writer for the audit log.
-func OpenAuditLogFileUntilSuccess(path string) (*os.File, error) {
+func OpenAuditLogFileUntilSuccess(path string, loggers ...logr.Logger) (*os.File, error) {
+	var l logr.Logger
+
+	if len(loggers) > 0 {
+		l = loggers[0]
+	} else {
+		z, err := zap.NewProduction()
+		if err != nil {
+			return nil, fmt.Errorf("failed to create zap logger: %w", err)
+		}
+		l = zapr.NewLogger(z)
+	}
+
+	l.Info("opening audit log file. This will block until the file is available", "path", path)
+
 	for {
 		// This is opened with the O_APPEND option to ensure
 		// atomicity of writes. This is important to ensure
@@ -44,6 +63,8 @@ func OpenAuditLogFileUntilSuccess(path string) (*os.File, error) {
 			// Not being able to write audit log events is a fatal error
 			return nil, err
 		}
+
+		l.Info("audit log file opened successfully", "path", path)
 		return fd, nil
 	}
 }

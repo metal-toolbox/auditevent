@@ -102,8 +102,7 @@ func TestInitTailFileFailsIfItCantCreateFIFO(t *testing.T) {
 	initCmd.SetOutput(buf)
 
 	// Set the arguments
-	tmpDir := t.TempDir()
-	args := append([]string{"-f"}, tmpDir)
+	args := append([]string{"-f"}, "/foo/bar/")
 
 	perr := initCmd.ParseFlags(args)
 	require.NoError(t, perr)

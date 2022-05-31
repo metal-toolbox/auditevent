@@ -102,8 +102,7 @@ func TestInitTailFileFailsIfItCantCreateFIFO(t *testing.T) {
 	initCmd.SetOutput(buf)
 
 	// Set the arguments
-	tmpDir := t.TempDir()
-	args := append([]string{"-f"}, tmpDir)
+	args := append([]string{"-f"}, "/foo/bar/")
 
 	perr := initCmd.ParseFlags(args)
 	require.NoError(t, perr)
@@ -138,4 +137,33 @@ func TestInitTailFileFailsToWriteSuccess(t *testing.T) {
 	err := initCmd.RunE(initCmd, args)
 	require.ErrorContains(t, err, "writing to stdout",
 		"there should be an error and it should contain the expected message")
+}
+
+func TestInitSucceedsEvenIfFileAlreadyExists(t *testing.T) {
+	t.Parallel()
+
+	c := NewRootCmd()
+	buf := bytes.NewBufferString("")
+	c.SetOutput(buf)
+	c.AddCommand(NewInitCommand())
+
+	args := []string{"init", "-f"}
+	var path string
+
+	tmpDir := t.TempDir()
+	path = filepath.Join(tmpDir, "audit.log")
+	args = append(args, path)
+
+	c.SetArgs(args)
+	err := c.Execute()
+	require.NoError(t, err, "unexpected error")
+
+	_, serr := os.Stat(path)
+	require.NoError(t, serr, "unexpected error")
+	require.Contains(t, buf.String(), "Created named pipe")
+
+	// A second call should still succeed
+	c.SetArgs(args)
+	err = c.Execute()
+	require.NoError(t, err, "unexpected error in second call")
 }

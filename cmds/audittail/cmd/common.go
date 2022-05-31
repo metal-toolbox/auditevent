@@ -16,7 +16,9 @@ limitations under the License.
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"syscall"
 
 	"github.com/spf13/cobra"
@@ -42,6 +44,10 @@ func validateCommonArgs(cmd *cobra.Command, args []string) error {
 
 func createNamedPipe(file string) error {
 	if err := syscall.Mkfifo(file, ownerGroupOwnership); err != nil {
+		// Don't fail if the file already exists.
+		if errors.Is(err, os.ErrExist) {
+			return nil
+		}
 		return fmt.Errorf("creating named pipe: %w", err)
 	}
 	return nil

@@ -1,0 +1,56 @@
+---
+name: security
+
+# Run for all pushes to main and pull requests when Go or YAML files change
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+  schedule:
+    - cron: '23 20 * * 2'
+
+jobs:
+  scan-trivy:
+    name: sec-scan-trivy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+      
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          ignore-unfixed: true
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'HIGH,CRITICAL'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  scan-anchore:
+    name: sec-scan-anchore
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+      
+      - name: Scan current project
+        id: codescan
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
+          severity-cutoff: high
+          acs-report-enable: true
+
+      - name: upload Anchore scan SARIF report
+        uses: github/codeql-action/upload-sarif@v1
+        if: ${{ always() }}
+        with:
+          sarif_file: ${{ steps.codescan.outputs.sarif }}

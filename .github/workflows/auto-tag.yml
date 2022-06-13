@@ -1,0 +1,20 @@
+name: Auto tag
+
+# Automatically push a tag every 1st and 15th of the month
+
+on:
+  schedule:
+    - cron: '30 15 1,15 * *'
+
+jobs:
+  auto-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Bump version and push tag
+        uses: anothrNick/github-tag-action@1.36.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true

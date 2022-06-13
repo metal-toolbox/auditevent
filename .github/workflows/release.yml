@@ -6,6 +6,20 @@ on:
       - v**
 
 jobs:
+  auto-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+
   container-main:
     uses: metal-toolbox/container-push/.github/workflows/container-push.yml@main
     with:

@@ -4,11 +4,14 @@ name: Auto tag
 
 on:
   schedule:
-    - cron: '35 12 15 * *'
+    - cron: '40 12 15 * *'
 
 jobs:
   auto-tag:
+    name: Automatic Tag
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

@@ -4,7 +4,7 @@ name: Auto tag
 
 on:
   schedule:
-    - cron: '30 15 1,15 * *'
+    - cron: '30 12 1,15 * *'
 
 jobs:
   auto-tag:

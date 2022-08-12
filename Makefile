@@ -6,7 +6,7 @@ GOOS=linux
 
 # Utility settings
 TOOLS_DIR := .tools
-GOLANGCI_LINT_VERSION = v1.46.2
+GOLANGCI_LINT_VERSION = v1.48.0
 
 # Container build settings
 CONTAINER_BUILD_CMD?=docker build

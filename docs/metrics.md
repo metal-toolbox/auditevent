@@ -46,13 +46,13 @@ order to fulfil such requirements.
 
 ## Usage
 
-###  In `auditevent.Writer`
+###  In `auditevent.EventWriter`
 
 An [`auditevent.EventWriter`](auditevent.md) instance may generate
 metrics and use a pre-defined `prometheus.Registerer` as follows:
 
 ```golang
-aew := auditevent.NewAuditEventWriter(writer, encoder)
+aew := auditevent.NewAuditEventWriter(encoder)
 
 // takes component name and registerer
 aew.WithPrometheusMetricsForRegisterer("web-server", registerer)

@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,7 +34,6 @@ type EventEncoder interface {
 // EventWriter writes audit events to a writer using
 // a given encoder.
 type EventWriter struct {
-	w   io.Writer
 	enc EventEncoder
 	mts *metrics.PrometheusMetricsProvider
 }
@@ -43,13 +42,13 @@ type EventWriter struct {
 // using a default JSON encoder.
 func NewDefaultAuditEventWriter(w io.Writer) *EventWriter {
 	enc := json.NewEncoder(w)
-	return NewAuditEventWriter(w, enc)
+	return NewAuditEventWriter(enc)
 }
 
 // NewAuditEventWriter is an encoder that encodes audit events
 // using the given encoder.
-func NewAuditEventWriter(w io.Writer, enc EventEncoder) *EventWriter {
-	return &EventWriter{w: w, enc: enc, mts: nil}
+func NewAuditEventWriter(enc EventEncoder) *EventWriter {
+	return &EventWriter{enc: enc, mts: nil}
 }
 
 // WithPrometheusMetricsForRegisterer adds prometheus metrics to this writer

@@ -20,7 +20,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -117,7 +116,7 @@ func TestRootFailsCreatingNamedPipe(t *testing.T) {
 
 	// create audit file
 	tmpDir := t.TempDir()
-	f, terr := ioutil.TempFile(tmpDir, "audit")
+	f, terr := os.CreateTemp(tmpDir, "audit")
 	require.NoError(t, terr, "unexpected error creating temp file")
 
 	// No execute access so mkfifo will fail
@@ -152,7 +151,7 @@ func TestRootFailsCreatingTailer(t *testing.T) {
 
 	// create audit file
 	tmpDir := t.TempDir()
-	f, terr := ioutil.TempFile(tmpDir, "audit")
+	f, terr := os.CreateTemp(tmpDir, "audit")
 	require.NoError(t, terr, "unexpected error creating temp file")
 
 	// write and execute, can't read

@@ -74,16 +74,14 @@ e.WithData(jsonData)
 
 The base package comes with a utility structure called `auditevent.EventWriter`. The `EventWriter`'s
 purpose is to encode an audit event to whatever representation is needed. This could writing directly
-to a file, a UNIX socket, or even an HTTP server. The requirement is that the writer that's passed
-to the `EventWriter` structure **must** implement the `io.Writer` interface.
-
+to a file, a UNIX socket, or even an HTTP server.
 Audit events also need to be encoded somehow, so an encoder must be passed to the `EventWriter`. An
 encoder **must** implement the `EventEncoder` interface that's made available in this package.
 
 The creation of an event writer would look as follows:
 
 ```golang
-aew := auditevent.NewAuditEventWriter(writer, encoder)
+aew := auditevent.NewAuditEventWriter(encoder)
 ```
 
 Since JSON encoding is common and expected, there is a default implementation that assumes
@@ -92,6 +90,8 @@ JSON encoding. It's may be used as follows:
 ```golang
 aew := auditevent.NewDefaultAuditEventWriter(writer)
 ```
+
+Where `writer` is an object that implements the `io.Writer` interface.
 
 To write events to the `EventWriter` one can do so as follows:
 

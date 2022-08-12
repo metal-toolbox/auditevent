@@ -15,7 +15,6 @@ limitations under the License.
 */
 
 /*
-
 The `AuditEvent` structure is used to represent an audit event.
 It provides the minimal information needed to audit an event, as well as
 a uniform format to persist the events in audit logs.

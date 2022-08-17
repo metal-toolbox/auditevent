@@ -16,6 +16,7 @@ limitations under the License.
 package helpers_test
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"sync"
@@ -55,6 +56,83 @@ func TestOpenAuditLogFileUntilSuccess(t *testing.T) {
 
 	err = fd.Close()
 	require.NoError(t, err)
+
+	// We wait so we don't leak file descriptors
+	wg.Wait()
+
+	err = os.Remove(tmpfile)
+	require.NoError(t, err)
+}
+
+func TestOpenAuditLogFileUntilSuccessWithContext(t *testing.T) {
+	t.Parallel()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	go func() {
+		defer wg.Done()
+		time.Sleep(time.Second)
+		fd, err := os.OpenFile(tmpfile, os.O_RDONLY|os.O_CREATE, 0o600)
+		require.NoError(t, err)
+		err = fd.Close()
+		require.NoError(t, err)
+	}()
+
+	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(context.TODO(), tmpfile)
+	require.NoError(t, err)
+	require.NotNil(t, fd)
+
+	err = fd.Close()
+	require.NoError(t, err)
+
+	// We wait so we don't leak file descriptors
+	wg.Wait()
+
+	err = os.Remove(tmpfile)
+	require.NoError(t, err)
+}
+
+func TestOpenAuditLogFileUntilSuccessWithContextClosed(t *testing.T) {
+	t.Parallel()
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func(c context.CancelFunc) {
+		time.Sleep(time.Second)
+		c()
+	}(cancel)
+
+	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(ctx, "/noexist")
+	require.ErrorIs(t, err, context.Canceled)
+	require.Nil(t, fd)
+}
+
+func TestOpenAuditLogFileUntilSuccessWithContextError(t *testing.T) {
+	t.Parallel()
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	go func() {
+		defer wg.Done()
+		time.Sleep(time.Second)
+		// This file is read only
+		fd, err := os.OpenFile(tmpfile, os.O_RDONLY|os.O_CREATE, 0o500)
+		require.NoError(t, err)
+		err = fd.Close()
+		require.NoError(t, err)
+	}()
+
+	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(context.TODO(), tmpfile)
+	require.Error(t, err)
+	require.Nil(t, fd)
 
 	// We wait so we don't leak file descriptors
 	wg.Wait()

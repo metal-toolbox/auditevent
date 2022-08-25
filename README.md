@@ -6,6 +6,8 @@
 
 A small and flexible library to help you create audit events.
 
+It also includes a helper container image for you to be able to forward audit events.
+
 ## Context
 
 While audit logging may seem like a very simple thing to add to an application, doing it right is

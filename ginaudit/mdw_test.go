@@ -228,6 +228,7 @@ func TestMiddleware(t *testing.T) {
 			require.Equal(t, tc.expectedEvent.Component, gotEvent.Component, "component should match")
 			require.Equal(t, tc.expectedEvent.Target, gotEvent.Target, "target should match")
 			require.Equal(t, tc.expectedEvent.Data, gotEvent.Data, "data should match")
+			require.NotEmpty(t, gotEvent.Metadata.AuditID, "audit id is not empty")
 		})
 	}
 }

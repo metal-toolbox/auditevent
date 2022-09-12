@@ -64,6 +64,14 @@ Since it's standard gin middleware, it's also possible to set it up per handler:
 r.GET("/foo", mdw.Audit() myGetFooHandler)
 ```
 
+### Context
+
+When using the gin middleware, the audit ID will be added to the context and available for use in subsequent handlers in the chain.
+
+```golang
+auditID := c.GetString(mdw.AuditIDContextKey)
+```
+
 ### Audit event types
 
 Audit event types identify the action that happened on a given request.

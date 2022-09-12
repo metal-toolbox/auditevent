@@ -113,6 +113,28 @@ func NewAuditEvent(
 	}
 }
 
+// NewAuditEventWithID returns a new AuditEvent with the passed AuditID.
+func NewAuditEventWithID(
+	auditID string,
+	eventType string,
+	source EventSource,
+	outcome string,
+	subjects map[string]string,
+	component string,
+) *AuditEvent {
+	return &AuditEvent{
+		Metadata: EventMetadata{
+			AuditID: auditID,
+		},
+		Type:      eventType,
+		LoggedAt:  time.Now().UTC(),
+		Source:    source,
+		Outcome:   outcome,
+		Subjects:  subjects,
+		Component: component,
+	}
+}
+
 // WithTarget sets the target of the event.
 func (e *AuditEvent) WithTarget(target map[string]string) *AuditEvent {
 	e.Target = target

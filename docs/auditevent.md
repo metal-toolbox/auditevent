@@ -70,6 +70,27 @@ if err != nil {
 e.WithData(jsonData)
 ```
 
+A helper function, `NewAuditEventWithID` also exists.  The function is identical in all ways to the `NewAuditEvent` function, but allows passing the audit ID.  This can be useful for maintaining continuity of the audit ID through a chain of distributed systems.
+
+```golang
+e := auditevent.NewAuditEventWithID(
+    "b87e5a40-f6fd-4b3d-9457-3d91c0596ad8",
+    "UserCreate",
+    auditevent.EventSource{
+        Type:  "IP",
+        Value: "127.0.0.1",
+    },
+    "Success",
+    map[string]string{
+        "username": "test",
+    },
+    "test-component",
+).WithTarget(map[string]string{
+    "path":    "/user",
+    "newUser": "foobar",
+})
+```
+
 ### Writing audit logs
 
 The base package comes with a utility structure called `auditevent.EventWriter`. The `EventWriter`'s

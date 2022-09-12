@@ -21,9 +21,15 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/metal-toolbox/auditevent"
+)
+
+const (
+	// AuditIDContextKey is the gin context key for the audit ID.
+	AuditIDContextKey = "audit.id"
 )
 
 type Middleware struct {
@@ -91,10 +97,14 @@ func (m *Middleware) AuditWithType(t string) gin.HandlerFunc {
 		method := c.Request.Method
 		path := c.Request.URL.Path
 
+		auditID := uuid.New().String()
+		c.Set(AuditIDContextKey, auditID)
+
 		// We audit after the request has been processed
 		c.Next()
 
-		event := auditevent.NewAuditEvent(
+		event := auditevent.NewAuditEventWithID(
+			auditID,
 			m.getEventType(t, method, path),
 			auditevent.EventSource{
 				Type: "IP",

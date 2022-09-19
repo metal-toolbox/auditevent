@@ -93,6 +93,9 @@ jobs:
       - name: Wait for readiness
         run: kubectl wait --for=condition=ready --timeout=60s -n ${{ matrix.scenario }} pod myapp
       
+      - name: Get pod information
+        run: kubectl describe -n ${{ matrix.scenario }} pod myapp
+      
       - name: Get logs
         id: logs
         run: kubectl logs -n ${{ matrix.scenario }} myapp -c audittail

@@ -1,0 +1,53 @@
+---
+# This test scenario consists of verifying that the audittail
+# image works in a case where no user is root.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+spec:
+  initContainers:
+    - image: ghcr.io/metal-toolbox/audittail:latest
+      imagePullPolicy: Never
+      args:
+        - 'init'
+        - '-f'
+        - '/app-audit/audit.log'
+      name: init-audit-logs
+      volumeMounts:
+        - mountPath: /app-audit
+          name: audit-logs
+  containers:
+    - name: myapp
+      image: busybox:stable
+      command: ['sh', '-c', 'echo This is an audit log > /app-audit/audit.log && touch /tmp/ready && sleep 3600']
+      readinessProbe:
+        exec:
+          command:
+          - cat
+          - /tmp/ready
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      volumeMounts:
+        - mountPath: /app-audit
+          name: audit-logs
+    - name: audittail
+      image: ghcr.io/metal-toolbox/audittail:latest
+      imagePullPolicy: Never
+      args:
+        - '-f'
+        - '/app-audit/audit.log'
+      resources:
+        limits:
+          memory: "50Mi"
+          cpu: "500m"
+      volumeMounts:
+        - mountPath: /app-audit
+          name: audit-logs
+  volumes:
+    - name: audit-logs
+      emptyDir: {}

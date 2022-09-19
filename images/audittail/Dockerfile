@@ -12,7 +12,8 @@ RUN CGO_ENABLED=0 go build -o /go/bin/audittail cmds/audittail/main.go
 
 FROM gcr.io/distroless/static:nonroot
 
-USER nonroot:nonroot
+# `nonroot` coming from distroless
+USER 65532:65532
 
 COPY --from=build-env /go/bin/audittail /
 ENTRYPOINT ["/audittail"]

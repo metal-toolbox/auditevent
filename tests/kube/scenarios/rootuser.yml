@@ -13,8 +13,6 @@ spec:
       imagePullPolicy: Never
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
       args:
         - 'init'
         - '-f'
@@ -46,8 +44,6 @@ spec:
       imagePullPolicy: Never
       securityContext:
         runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
       args:
         - '-f'
         - '/app-audit/audit.log'

@@ -63,3 +63,42 @@ jobs:
       
       - name: Inspect action SARIF report
         run: cat ${{ steps.scan.outputs.sarif }}
+
+  kube-test:
+    strategy:
+      matrix:
+        scenario: [nonroot, rootuser, allroot]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v3
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.3.0
+      
+      - name: Build image
+        run: make image
+      
+      - name: Load audittail image into kind cluster
+        run: kind load docker-image gchr.io/metal-toolbox/audittail:latest
+      
+      - name: Create Namespace
+        run: kubectl create namespace ${{ matrix.scenario }}
+      
+      - name: Deploy test scenario
+        run: kubectl apply -f tests/kube/scenarios/${{ matrix.scenario }}.yml -n ${{ matrix.scenario }}
+    
+      - name: Wait for readiness
+        run: kubectl wait --for=condition=ready --timeout=60s -n ${{ matrix.scenario }} pod myapp
+      
+      - name: Get logs
+        id: logs
+        run: kubectl logs -n ${{ matrix.scenario }} myapp -c audittail
+      
+      - name: Inspect logs
+        run: echo ${{ steps.logs.outputs.stdout }}
+      
+      - name: Check logs
+        run: |
+          echo ${{ steps.logs.outputs.stdout }} | grep "This is an audit log"
+          echo ${{ steps.logs.outputs.stdout }} | grep "This is an audit log" | wc -l | grep 1

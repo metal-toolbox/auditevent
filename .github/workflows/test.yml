@@ -98,12 +98,14 @@ jobs:
       
       - name: Get logs
         id: logs
-        run: kubectl logs -n ${{ matrix.scenario }} myapp -c audittail
+        run: |
+          kubectl logs -n ${{ matrix.scenario }} myapp -c audittail
+          echo "::set-output name=auditlog::$(kubectl logs -n ${{ matrix.scenario }} myapp -c audittail)"
       
       - name: Inspect logs
-        run: echo ${{ steps.logs.outputs.stdout }}
+        run: echo ${{ steps.logs.outputs.auditlog }}
       
       - name: Check logs
         run: |
-          echo ${{ steps.logs.outputs.stdout }} | grep "This is an audit log"
-          echo ${{ steps.logs.outputs.stdout }} | grep "This is an audit log" | wc -l | grep 1
+          echo ${{ steps.logs.outputs.auditlog }} | grep "This is an audit log"
+          echo ${{ steps.logs.outputs.auditlog }} | grep "This is an audit log" | wc -l | grep 1

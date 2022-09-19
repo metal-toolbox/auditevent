@@ -1,6 +1,8 @@
 ---
 # This test scenario consists of verifying that the audittail
-# image works in a case where no user is root.
+# image works in a case where the user of the audittail image
+# (the main application itself) is using a root user, while audittail
+# is not.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -24,7 +26,6 @@ spec:
   containers:
     - name: myapp
       image: busybox:stable
-      imagePullPolicy: Never
       command: ['sh', '-c', 'echo This is an audit log > /app-audit/audit.log && touch /tmp/ready && sleep 3600']
       readinessProbe:
         exec:

@@ -1,6 +1,7 @@
 ---
 # This test scenario consists of verifying that the audittail
-# image works in a case where no user is root.
+# image works in a case where no user is specified (root by default
+# on kubernetes).
 apiVersion: v1
 kind: Pod
 metadata:

@@ -47,13 +47,13 @@ jobs:
           context: .
           file: ./images/audittail/Dockerfile
           push: false
-          tags: gchr.io/metal-toolbox/audittail:latest
+          tags: ghcr.io/metal-toolbox/audittail:latest
 
       - name: Scan image
         id: scan
         uses: anchore/scan-action@v3
         with:
-          image: gchr.io/metal-toolbox/audittail:latest
+          image: ghcr.io/metal-toolbox/audittail:latest
           acs-report-enable: true
 
       - name: upload Anchore scan SARIF report
@@ -80,7 +80,7 @@ jobs:
         run: make image
       
       - name: Load audittail image into kind cluster
-        run: kind load docker-image gchr.io/metal-toolbox/audittail:latest
+        run: kind load docker-image ghcr.io/metal-toolbox/audittail:latest
       
       - name: Create Namespace
         run: kubectl create namespace ${{ matrix.scenario }}

@@ -330,8 +330,7 @@ func TestCantRegisterMultipleTimesToSamePrometheus(t *testing.T) {
 	})
 }
 
-// Tests the that the middleware generates events with a custom
-// outcome handler.
+// Tests that the middleware generates events with a custom outcome handler.
 func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 	t.Parallel()
 
@@ -377,6 +376,56 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 
 			// This is the custom outcome we set above
 			require.Equal(t, "custom", gotEvent.Outcome, "outcome should match")
+		})
+	}
+}
+
+// Tests that the middleware generates events with a custom subject handler.
+func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
+	t.Parallel()
+
+	for _, tc := range getTestCases() {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			p := testtools.GetNamedPipe(t)
+
+			fdchan := testtools.SetPipeReader(t, p)
+
+			f, err := os.Open(p)
+			require.NoError(t, err)
+
+			// receive pipe reader file descriptor
+			pfd := <-fdchan
+			defer pfd.Close()
+
+			r, mdw := setFixtures(t, pfd, nil)
+			mdw.WithSubjectHandler(func(c *gin.Context) map[string]string {
+				return map[string]string{"custom": "customvalue"}
+			})
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
+			for k, v := range tc.headers {
+				req.Header.Set(k, v)
+			}
+			r.ServeHTTP(w, req)
+
+			// wait for the event to be written
+			gotEvent := &auditevent.AuditEvent{}
+			dec := json.NewDecoder(f)
+			decErr := dec.Decode(gotEvent)
+			require.NoError(t, decErr)
+
+			require.Equal(t, tc.expectedEvent.Type, gotEvent.Type, "type should match")
+			require.True(t, gotEvent.LoggedAt.Before(time.Now()), "logging time should be before now")
+			require.Equal(t, tc.expectedEvent.Source.Type, gotEvent.Source.Type, "source type should match")
+			require.Equal(t, tc.expectedEvent.Component, gotEvent.Component, "component should match")
+			require.Equal(t, tc.expectedEvent.Target, gotEvent.Target, "target should match")
+			require.Equal(t, tc.expectedEvent.Data, gotEvent.Data, "data should match")
+			require.Equal(t, tc.expectedEvent.Outcome, gotEvent.Outcome, "outcome should match")
+
+			// This is the custom subjects we set above
+			require.Equal(t, map[string]string{"custom": "customvalue"}, gotEvent.Subjects, "subjects should match")
 		})
 	}
 }

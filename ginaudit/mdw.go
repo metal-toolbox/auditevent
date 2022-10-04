@@ -37,6 +37,7 @@ type Middleware struct {
 	aew            *auditevent.EventWriter
 	eventTypeMap   sync.Map
 	outcomeHandler OutcomeHandler
+	subjectHandler SubjectHandler
 }
 
 // NewMiddleware returns a new instance of audit Middleware.
@@ -45,6 +46,7 @@ func NewMiddleware(component string, aew *auditevent.EventWriter) *Middleware {
 		component:      component,
 		aew:            aew,
 		outcomeHandler: GetOutcomeDefault,
+		subjectHandler: GetSubjectDefault,
 	}
 }
 
@@ -72,6 +74,11 @@ func (m *Middleware) WithPrometheusMetricsForRegisterer(pr prometheus.Registerer
 
 func (m *Middleware) WithOutcomeHandler(handler OutcomeHandler) *Middleware {
 	m.outcomeHandler = handler
+	return m
+}
+
+func (m *Middleware) WithSubjectHandler(handler SubjectHandler) *Middleware {
+	m.subjectHandler = handler
 	return m
 }
 
@@ -112,7 +119,7 @@ func (m *Middleware) AuditWithType(t string) gin.HandlerFunc {
 				Value: c.ClientIP(),
 			},
 			m.outcomeHandler(c),
-			m.getSubject(c),
+			m.subjectHandler(c),
 			m.component,
 		).WithTarget(map[string]string{
 			"path": path,
@@ -137,26 +144,6 @@ func (m *Middleware) getEventType(preferredType, httpMethod, path string) string
 		}
 	}
 	return key
-}
-
-func (m *Middleware) getSubject(c *gin.Context) map[string]string {
-	// These context keys come from github.com/metal-toolbox/hollow-toolbox/ginjwt
-	sub := c.GetString("jwt.subject")
-	if sub == "" {
-		sub = "Unknown"
-	}
-
-	user := c.GetString("jwt.user")
-	if user == "" {
-		user = c.Request.Header.Get("X-User-Id")
-		if user == "" {
-			user = "Unknown"
-		}
-	}
-	return map[string]string{
-		"user": user,
-		"sub":  sub,
-	}
 }
 
 // This function is wrapped to allow for easy testing and

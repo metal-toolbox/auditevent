@@ -50,6 +50,8 @@ const (
 	comp = "test"
 )
 
+var testData = json.RawMessage(`{"foo":"bar"}`)
+
 type testCase struct {
 	name          string
 	expectedEvent *auditevent.AuditEvent
@@ -141,6 +143,66 @@ func getTestCases() []testCase {
 				"X-User-Id": "user-ozz-from-header",
 			},
 		},
+		{
+			"user request succeeds, enriched by context data",
+			auditevent.NewAuditEvent(
+				"GET:/changes",
+				auditevent.EventSource{
+					Type:  "IP",
+					Value: "127.0.0.1",
+				},
+				auditevent.OutcomeSucceeded,
+				map[string]string{
+					"user": "user-ozz",
+					"sub":  "sub-ozz",
+				},
+				comp,
+			).WithTarget(map[string]string{
+				"path": "/changes",
+			}).WithData(&testData),
+			http.MethodGet,
+			nil,
+		},
+		{
+			"user request denied, encriched by context data",
+			auditevent.NewAuditEvent(
+				"GET:/changes/denied",
+				auditevent.EventSource{
+					Type:  "IP",
+					Value: "127.0.0.1",
+				},
+				auditevent.OutcomeDenied,
+				map[string]string{
+					"user": "Unknown",
+					"sub":  "Unknown",
+				},
+				comp,
+			).WithTarget(map[string]string{
+				"path": "/changes/denied",
+			}).WithData(&testData),
+			http.MethodGet,
+			nil,
+		},
+		{
+			"user request succeeds, context data added as wrong type",
+			auditevent.NewAuditEvent(
+				"GET:/nodata",
+				auditevent.EventSource{
+					Type:  "IP",
+					Value: "127.0.0.1",
+				},
+				auditevent.OutcomeSucceeded,
+				map[string]string{
+					"user": "user-ozz",
+					"sub":  "sub-ozz",
+				},
+				comp,
+			).WithTarget(map[string]string{
+				"path": "/nodata",
+			}),
+			http.MethodGet,
+			nil,
+		},
 	}
 }
 
@@ -183,6 +245,28 @@ func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) (*gin.Engi
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
 		c.JSON(http.StatusForbidden, "denied")
+	})
+
+	// allowed with user, enriched by context data
+	r.GET("/changes", func(c *gin.Context) {
+		c.Set("jwt.user", "user-ozz")
+		c.Set("jwt.subject", "sub-ozz")
+		c.Set(ginaudit.AuditDataContextKey, &testData)
+		c.JSON(http.StatusOK, "ok")
+	})
+
+	// denied with no user, enriched by context data
+	r.GET("/changes/denied", func(c *gin.Context) {
+		c.Set(ginaudit.AuditDataContextKey, &testData)
+		c.JSON(http.StatusForbidden, "denied")
+	})
+
+	// context data of wrong type
+	r.GET("/nodata", func(c *gin.Context) {
+		c.Set("jwt.user", "user-ozz")
+		c.Set("jwt.subject", "sub-ozz")
+		c.Set(ginaudit.AuditDataContextKey, "some random string")
+		c.JSON(http.StatusOK, "ok")
 	})
 
 	return r, mdw

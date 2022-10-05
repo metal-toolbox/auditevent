@@ -72,6 +72,20 @@ When using the gin middleware, the audit ID will be added to the context and ava
 auditID := c.GetString(mdw.AuditIDContextKey)
 ```
 
+#### Addtional Data
+
+Additional audit data can be passed down to the audit middleware via the context key
+`AuditDataContextKey`.  This can be leveraged to enrich the audit events with
+diff information or other data for forensic analysis.  The value is expected to be
+a `*json.RawMessage` and you are responsible for ensuring proper JSON structure.
+
+```golang
+// add additional data to context to be logged in the
+// audit event by the middleware
+mydata := json.RawMessage(`{"foo":"bar"}`)
+c.Set(mdw.AuditDataContextKey, &mydata)
+```
+
 ### Audit event types
 
 Audit event types identify the action that happened on a given request.

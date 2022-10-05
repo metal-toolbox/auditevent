@@ -16,6 +16,7 @@ limitations under the License.
 package ginaudit
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"sync"
@@ -28,6 +29,8 @@ import (
 )
 
 const (
+	// AuditDataContextKey is the gin context key for additional audit data.
+	AuditDataContextKey = "audit.data"
 	// AuditIDContextKey is the gin context key for the audit ID.
 	AuditIDContextKey = "audit.id"
 )
@@ -124,6 +127,14 @@ func (m *Middleware) AuditWithType(t string) gin.HandlerFunc {
 		).WithTarget(map[string]string{
 			"path": path,
 		})
+
+		data, ok := c.Get(AuditDataContextKey)
+		if ok {
+			ed, ok := data.(*json.RawMessage)
+			if ok {
+				event.WithData(ed)
+			}
+		}
 
 		// persist event
 		m.write(event)

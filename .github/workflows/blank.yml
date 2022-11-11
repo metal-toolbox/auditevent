@@ -1,0 +1,20 @@
+name: helm-test
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Get repositories
+        uses: hiberbee/github-action-helm@1.5.0
+        with:
+          helm: repo list
+      
+      - name: Run a one-line script
+        run: cd audittail-helm-library/tests && helm dependency update ./consumerapp && helm template consumerapp ./consumerapp/ --debug

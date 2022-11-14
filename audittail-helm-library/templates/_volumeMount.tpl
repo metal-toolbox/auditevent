@@ -3,6 +3,6 @@
 Kubernetes Volume Mounts
 */}}
 {{- define "audittail.volumeMount" -}}
-- mountPath: /app-audit
-  name: audit-logs
+- mountPath: {{ template "audittail.mountPath" }}
+  name: {{ template "audittail.volumeName" }}
 {{- end -}}

@@ -3,13 +3,9 @@
 Kubernetes Init Container
 */}}
 {{- define "audittail.sidecarContainer" -}}
-  - image: ghcr.io/metal-toolbox/audittail:v0.1.7
-  name: audit-logger
-  args:
-    - '-f'
-    - '/app-audit/audit.log'
-  volumeMounts:
-    - mountPath: /app-audit
-      name: audit-logs
+  - image: {{ template "audittail.image"}}
+  name: {{ template "audittail.sidecarContainerName" }}
+  args: {{ include "audittail.args" .| nindent 4}}
+  volumeMounts: {{ include "audittail.volumeMount" . | nindent 4}}
       readonly: true
 {{- end -}}

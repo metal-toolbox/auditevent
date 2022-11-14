@@ -3,6 +3,6 @@
 Kubernetes Volumes
 */}}
 {{- define "audittail.volume" -}}
-- name: audit-logs
+- name: {{ template "audittail.volumeName" }}
   emptyDir: {}
 {{- end -}}

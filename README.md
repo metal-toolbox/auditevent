@@ -31,6 +31,12 @@ An library to generate and write audit events.
 
 [Read more.](docs/auditevent.md)
 
+### `audittail-helm-library`
+
+Helm library to use audittail container.
+
+[Read more.](docs/audittail-helm-library.md)
+
 ### Gin middleware
 
 Middleware for the [Gin HTTP framework](https://gin-gonic.com/)

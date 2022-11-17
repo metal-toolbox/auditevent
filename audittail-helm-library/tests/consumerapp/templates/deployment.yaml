@@ -25,7 +25,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
-
           args:
             - --audit-log-path={{ template "audittail.auditLogPath" }}
           volumeMounts:

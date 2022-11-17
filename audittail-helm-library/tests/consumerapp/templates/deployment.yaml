@@ -5,11 +5,6 @@ metadata:
   labels:
     app: k8s-app
 spec:
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-spec:
   replicas: 1
   selector:
     matchLabels:
@@ -21,6 +16,9 @@ spec:
     spec:
       initContainers:
         {{- include "audittail.initContainer" .| nindent 8 }}
+          securityContext:
+            allowPriviligesEsclation: false
+            runAsNonroot: true
       containers:
         - image: nging
           name: nginx

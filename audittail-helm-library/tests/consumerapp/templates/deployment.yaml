@@ -31,7 +31,7 @@ spec:
             {{- include "audittail.volumeMount" . | nindent 12}}
         {{- include "audittail.sidecarContainer" .| nindent 8 }}
          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
+           allowPrivilegeEscalation: false
+           runAsNonRoot: true
       volumes:
         {{- include "audittail.volume" . | nindent 8}}

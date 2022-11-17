@@ -17,8 +17,8 @@ spec:
       initContainers:
         {{- include "audittail.initContainer" .| nindent 8 }}
           securityContext:
-            allowPriviligesEsclation: false
-            runAsNonroot: true
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
       containers:
         - image: nging
           name: nginx

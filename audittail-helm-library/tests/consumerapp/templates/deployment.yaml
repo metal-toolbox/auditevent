@@ -22,10 +22,17 @@ spec:
       containers:
         - image: nging
           name: nginx
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+
           args:
             - --audit-log-path={{ template "audittail.auditLogPath" }}
           volumeMounts:
             {{- include "audittail.volumeMount" . | nindent 12}}
         {{- include "audittail.sidecarContainer" .| nindent 8 }}
+         securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
       volumes:
         {{- include "audittail.volume" . | nindent 8}}

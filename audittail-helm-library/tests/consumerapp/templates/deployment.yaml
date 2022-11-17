@@ -20,7 +20,7 @@ spec:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
       containers:
-        - image: nging
+        - image: nginx:1.0
           name: nginx
           securityContext:
             allowPrivilegeEscalation: false

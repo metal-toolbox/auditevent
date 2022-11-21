@@ -24,7 +24,7 @@ audittail log path
 
 
 {{- define "audittail.initContainerName" -}}
-{{- printf "init-audi-logs" -}}
+{{- printf "init-audit-logs" -}}
 {{- end -}}
 
 {{- define "audittail.sidecarContainerName" -}}

@@ -17,8 +17,11 @@ spec:
       initContainers:
         {{- include "audittail.initContainer" .| nindent 8 }}
       containers:
-        - image: nging
+        - image: nginx:1.0
           name: nginx
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
           args:
             - --audit-log-path={{ template "audittail.auditLogPath" }}
           volumeMounts:

@@ -16,9 +16,6 @@ spec:
     spec:
       initContainers:
         {{- include "audittail.initContainer" .| nindent 8 }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
       containers:
         - image: nginx:1.0
           name: nginx
@@ -30,8 +27,5 @@ spec:
           volumeMounts:
             {{- include "audittail.volumeMount" . | nindent 12}}
         {{- include "audittail.sidecarContainer" .| nindent 8 }}
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
       volumes:
         {{- include "audittail.volume" . | nindent 8}}

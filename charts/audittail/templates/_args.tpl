@@ -1,6 +1,6 @@
 {{/* vim: set filetype=mustache: */}}
 {{/*
-Kubernetes container args
+Kubernetes container arguments
 */}}
 {{- define "audittail.args" -}}
 - '-f'

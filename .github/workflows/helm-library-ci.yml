@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Get repositories
-        uses: hiberbee/github-action-helm@1.5.0
+      - name: Install Helm
+        uses: azure/setup-helm@v3
         with:
-          helm: repo list
-      
+          version: v3.10.0
+ 
       - name: Run a one-line script
-        run: cd audittail-helm-library/tests && helm dependency update ./consumerapp && helm template consumerapp ./consumerapp/ --debug
+        run: cd charts/audittail/tests && helm dependency update ./consumerapp && helm template consumerapp ./consumerapp/ --debug

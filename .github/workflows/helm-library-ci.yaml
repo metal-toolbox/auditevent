@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       
       - name: Get repositories
-        uses: hiberbee/github-action-helm@1.5.0
+        uses: hiberbee/github-action-helm@1.13.0
         with:
           helm: repo list
       

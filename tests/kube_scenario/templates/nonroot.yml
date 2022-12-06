@@ -1,0 +1,34 @@
+---
+# This test scenario consists of verifying that the audittail
+# image works in a case where no user is root.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+  initContainers:
+    {{- include "audittail.initContainer" .| nindent 4 }}
+  containers:
+    - name: myapp
+      image: busybox:stable
+      command: ['sh', '-c', 'echo This is an audit log > /app-audit/audit.log && touch /tmp/ready && sleep 3600']
+      readinessProbe:
+        exec:
+          command:
+          - cat
+          - /tmp/ready
+        initialDelaySeconds: 5
+        periodSeconds: 5
+      resources:
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+      volumeMounts:
+        {{- include "audittail.volumeMount" . | nindent 8}}
+    {{- include "audittail.sidecarContainer" .| nindent 4 }} 
+  volumes:
+    {{- include "audittail.volume" . | nindent 4}}

@@ -1,0 +1,29 @@
+nameOverride: "myapp"
+
+image:
+  repository: busybox
+  tag: stable
+  command:
+    - 'sh'
+    - '-c'
+    - 'echo This is an audit log > /app-audit/audit.log && touch /tmp/ready && sleep 3600'
+
+auditailImage: "ghcr.io/metal-toolbox/audittail:latest"
+
+securityContext: 
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+readinessProbe:
+  exec:
+    command:
+    - cat
+    - /tmp/ready
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+resources: 
+  limits:
+    cpu: 500m
+    memory: 128Mi

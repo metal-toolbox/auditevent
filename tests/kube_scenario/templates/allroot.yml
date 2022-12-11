@@ -5,25 +5,20 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: myapp
+  name: "{{ include "kube_scenario.name" .}}"
 spec:
   initContainers:
     {{- include "audittail.initContainer" .| nindent 4 }}
   containers:
-    - name: myapp
-      image: busybox:stable
-      command: ['sh', '-c', 'echo This is an audit log > /app-audit/audit.log && touch /tmp/ready && sleep 3600']
+    - name: "{{ include "kube_scenario.name" .}}"
+      image:  "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      command: {{- range .Values.image.command }}
+        - {{ . | quote }}
+        {{- end}}
       readinessProbe:
-        exec:
-          command:
-          - cat
-          - /tmp/ready
-        initialDelaySeconds: 5
-        periodSeconds: 5
+        {{- toYaml .Values.readinessProbe | nindent 8 }}
       resources:
-        limits:
-          memory: "128Mi"
-          cpu: "500m"
+        {{- toYaml .Values.resources | nindent 8 }}
       volumeMounts:
         {{- include "audittail.volumeMount" . | nindent 8 }}
     {{- include "audittail.sidecarContainer" .| nindent 4 }} 

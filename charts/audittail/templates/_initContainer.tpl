@@ -3,7 +3,7 @@
 Kubernetes Init Container
 */}}
 {{- define "audittail.initContainer" -}}
-  - image: {{ template "audittail.image"}}
+  - image: {{ include "audittail.image" .}}
   name: {{ template "audittail.initContainerName" }}
   args: {{ include "audittail.initargs" . | nindent 4}}
   securityContext: {{ include "audittail.securityContext" . | nindent 4}}

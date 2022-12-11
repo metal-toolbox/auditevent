@@ -93,7 +93,7 @@ jobs:
         run: kubectl create namespace ${{ matrix.scenario }}
       
       - name: Deploy test scenario
-        run: helm dependency update .test/kube_scenario/ && helm template test/kubescenario -s templates/${{ matrix.scenario }}.yml .test/kube_scenario/ | kubectl apply -f - -n ${{ matrix.scenario }}
+        run: helm dependency update .tests/kube_scenario/ && helm template tests/kubescenario -s templates/${{ matrix.scenario }}.yml .tests/kube_scenario/ | kubectl apply -f - -n ${{ matrix.scenario }}
     
       - name: Wait for readiness
         run: kubectl wait --for=condition=ready --timeout=60s -n ${{ matrix.scenario }} pod myapp

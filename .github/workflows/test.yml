@@ -67,7 +67,7 @@ jobs:
   kube-test:
     strategy:
       matrix:
-        scenario: [nonroot, rootuser, allroot]
+        scenario: [nonroot, rootuser]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
@@ -81,7 +81,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
-          version: v3.10.0
+          version: latest
 
       - name: Build image
         run: make image

@@ -9,7 +9,11 @@ audittail log path
 
 
 {{- define "audittail.image" -}}
+{{- if .Values.auditailImage -}}
+{{- .Values.auditailImage -}}
+{{- else -}}
 {{- printf "ghcr.io/metal-toolbox/audittail:v0.5.1" -}}
+{{- end -}}
 {{- end -}}
 
 

@@ -1,0 +1,27 @@
+---
+# This test scenario consists of verifying that the audittail
+# image works in a case where the user of the audittail image
+# (the main application itself) is using a root user, while audittail
+# is not.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "kube_scenario.name" .}}"
+spec:
+  initContainers:
+    {{- include "audittail.initContainer" .| nindent 4 }}
+  containers:
+    - name: "{{ include "kube_scenario.name" .}}"
+      image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+      command: {{- range .Values.image.command }}
+        - {{ . | quote }}
+        {{- end}}
+      readinessProbe:
+        {{- toYaml .Values.readinessProbe | nindent 8 }}
+      resources:
+        {{- toYaml .Values.resources | nindent 8 }}
+      volumeMounts:
+        {{- include "audittail.volumeMount" . | nindent 8}}
+    {{- include "audittail.sidecarContainer" .| nindent 4 }} 
+  volumes:
+    {{- include "audittail.volume" . | nindent 4}}

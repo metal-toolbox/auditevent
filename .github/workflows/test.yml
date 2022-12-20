@@ -67,7 +67,7 @@ jobs:
   kube-test:
     strategy:
       matrix:
-        scenario: [nonroot, rootuser, allroot]
+        scenario: [nonroot, rootuser]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 
@@ -78,6 +78,11 @@ jobs:
         with:
           cluster_name: kind
       
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: latest
+
       - name: Build image
         run: make image
       
@@ -88,7 +93,7 @@ jobs:
         run: kubectl create namespace ${{ matrix.scenario }}
       
       - name: Deploy test scenario
-        run: kubectl apply -f tests/kube/scenarios/${{ matrix.scenario }}.yml -n ${{ matrix.scenario }}
+        run: cd tests && helm dependency update ./kube_scenario/ && helm template kubescenario -s templates/${{ matrix.scenario }}.yml ./kube_scenario/ | kubectl apply -f - -n ${{ matrix.scenario }} 
     
       - name: Wait for readiness
         run: kubectl wait --for=condition=ready --timeout=60s -n ${{ matrix.scenario }} pod myapp
@@ -99,8 +104,8 @@ jobs:
       - name: Get logs
         id: logs
         run: |
-          kubectl logs -n ${{ matrix.scenario }} myapp -c audittail
-          echo "::set-output name=auditlog::$(kubectl logs -n ${{ matrix.scenario }} myapp -c audittail)"
+          kubectl logs -n ${{ matrix.scenario }} myapp -c audit-logger
+          echo "::set-output name=auditlog::$(kubectl logs -n ${{ matrix.scenario }} myapp -c audit-logger)"
       
       - name: Inspect logs
         run: echo ${{ steps.logs.outputs.auditlog }}

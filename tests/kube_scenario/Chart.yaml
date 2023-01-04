@@ -26,4 +26,4 @@ appVersion: "1.16.0"
 dependencies:
   - name: audittail
     version: 1.0.1
-    repository: https://github.com/metal-toolbox/k8s-audittail
+    repository: https://github.com/metal-toolbox.io/k8s-audittail

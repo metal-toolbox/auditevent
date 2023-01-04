@@ -25,5 +25,5 @@ appVersion: "1.16.0"
 
 dependencies:
   - name: audittail
-    version: 1.0.0
-    repository: file://../../charts/audittail
+    version: 1.0.1
+    repository: https://metal-toolbox.github.io/k8s-audittail

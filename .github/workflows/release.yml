@@ -24,7 +24,7 @@ jobs:
     uses: metal-toolbox/container-push/.github/workflows/container-push.yml@main
     with:
       name: audittail
-      tag: ${GITHUB_REF_NAME}
+      tag: ${{ github.ref_name }}
       dockerfile_path: images/audittail/Dockerfile
       platforms: linux/amd64,linux/arm64
 

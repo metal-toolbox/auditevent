@@ -26,4 +26,5 @@ jobs:
       name: audittail
       tag: ${GITHUB_REF_NAME}
       dockerfile_path: images/audittail/Dockerfile
+      platforms: linux/amd64,linux/arm64
 

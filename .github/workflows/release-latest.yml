@@ -13,3 +13,4 @@ jobs:
       name: audittail
       tag: latest
       dockerfile_path: images/audittail/Dockerfile
+      platforms: linux/amd64,linux/arm64

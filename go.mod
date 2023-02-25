@@ -10,7 +10,7 @@ require (
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/common v0.40.0
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.1.0
 )

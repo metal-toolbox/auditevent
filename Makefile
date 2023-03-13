@@ -6,7 +6,7 @@ GOOS=linux
 
 # Utility settings
 TOOLS_DIR := .tools
-GOLANGCI_LINT_VERSION = v1.49.0
+GOLANGCI_LINT_VERSION = v1.51.2
 
 # Container build settings
 CONTAINER_BUILD_CMD?=docker build
@@ -25,7 +25,7 @@ PHONY: test coverage lint golint clean vendor
 
 test: | lint
 	@echo Running unit tests...
-	@go test -timeout 30s -cover -short  -tags testtools ./...
+	@go test -timeout 30s -cover -short -tags testtools ./...
 
 coverage:
 	@echo Generating coverage report...

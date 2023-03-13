@@ -1,0 +1,27 @@
+version: "3.9"
+
+networks:
+  infradev:
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VARIANT: 1.20-bullseye
+        NODE_VERSION: "none"
+    command:
+      - .devcontainer/scripts/app-entrypoint.sh
+    env_file:
+      - .env
+      - .env.go
+    volumes:
+      - ..:/workspace
+    networks:
+      - infradev
+    # Port forwarded for local development with emacs tramp
+    # ports:
+    #   - "127.0.0.1:2222:2222"
+    # Use "forwardPorts" in **devcontainer.json** to forward a port locally.
+    # (Adding the "ports" property to this file will not forward from a Codespace.)

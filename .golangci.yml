@@ -17,7 +17,6 @@ linters:
     - bidichk
     - bodyclose
     - containedctx
-    - deadcode
     - decorder
     - depguard
     - dogsled
@@ -51,7 +50,6 @@ linters:
     - gosimple
     - govet
     - grouper
-    - ifshort
     - importas
     - ineffassign
     - lll
@@ -71,7 +69,6 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - structcheck
     - stylecheck
     - tagliatelle
     - tenv
@@ -81,7 +78,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    - varcheck
     - wastedassign
     - whitespace
     # - contextcheck

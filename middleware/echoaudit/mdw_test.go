@@ -35,15 +35,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/expfmt"
 	"github.com/stretchr/testify/require"
 
 	"github.com/metal-toolbox/auditevent"
-	"github.com/metal-toolbox/auditevent/ginaudit"
 	"github.com/metal-toolbox/auditevent/internal/testtools"
 	"github.com/metal-toolbox/auditevent/metrics"
+	"github.com/metal-toolbox/auditevent/middleware/echoaudit"
 )
 
 const (
@@ -206,67 +206,68 @@ func getTestCases() []testCase {
 	}
 }
 
-func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) (*gin.Engine, *ginaudit.Middleware) {
+func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) (*echo.Echo, *echoaudit.Middleware) {
 	t.Helper()
 
-	mdw := ginaudit.NewJSONMiddleware(comp, w)
+	mdw := echoaudit.NewJSONMiddleware(comp, w)
 
 	if pr != nil {
 		mdw.WithPrometheusMetricsForRegisterer(pr)
 	}
 
-	r := gin.New()
+	r := echo.New()
 
 	// Writing to `fails-with-user-header` breaks the app
 	r.POST("/fails-with-user-header",
+		func(ctx echo.Context) error {
+			return errors.New("boom")
+		},
 		mdw.AuditWithType("AlwaysBreaks"),
-		func(ctx *gin.Context) {
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-		})
+	)
 
 	// Everything after this will be audited
 	r.Use(mdw.Audit())
 
 	// allowed user with registered event type
 	mdw.RegisterEventType("MyEventType", http.MethodGet, "/ok")
-	r.GET("/ok", func(c *gin.Context) {
+	r.GET("/ok", func(c echo.Context) error {
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
-		c.JSON(http.StatusOK, "ok")
+		return c.JSON(http.StatusOK, "ok")
 	})
 
 	// denied with no user
-	r.GET("/denied", func(c *gin.Context) {
-		c.JSON(http.StatusForbidden, "denied")
+	r.GET("/denied", func(c echo.Context) error {
+		return c.JSON(http.StatusForbidden, "denied")
 	})
 
 	// denied with user
-	r.GET("/denied-user", func(c *gin.Context) {
+	r.GET("/denied-user", func(c echo.Context) error {
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
-		c.JSON(http.StatusForbidden, "denied")
+		return c.JSON(http.StatusForbidden, "denied")
 	})
 
 	// allowed with user, enriched by context data
-	r.GET("/changes", func(c *gin.Context) {
+	r.GET("/changes", func(c echo.Context) error {
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
-		c.Set(ginaudit.AuditDataContextKey, &testData)
-		c.JSON(http.StatusOK, "ok")
+		c.Set(echoaudit.AuditDataContextKey, &testData)
+		return c.JSON(http.StatusOK, "ok")
 	})
 
 	// denied with no user, enriched by context data
-	r.GET("/changes/denied", func(c *gin.Context) {
-		c.Set(ginaudit.AuditDataContextKey, &testData)
-		c.JSON(http.StatusForbidden, "denied")
+	r.GET("/changes/denied", func(c echo.Context) error {
+		c.Set(echoaudit.AuditDataContextKey, &testData)
+		return c.JSON(http.StatusForbidden, "denied")
 	})
 
 	// context data of wrong type
-	r.GET("/nodata", func(c *gin.Context) {
+	r.GET("/nodata", func(c echo.Context) error {
 		c.Set("jwt.user", "user-ozz")
 		c.Set("jwt.subject", "sub-ozz")
-		c.Set(ginaudit.AuditDataContextKey, "some random string")
-		c.JSON(http.StatusOK, "ok")
+		c.Set(echoaudit.AuditDataContextKey, "some random string")
+		return c.JSON(http.StatusOK, "ok")
 	})
 
 	return r, mdw
@@ -349,11 +350,15 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 
 		go func(wg *sync.WaitGroup, method, path string, headers map[string]string) {
 			defer wg.Done()
+
 			w := httptest.NewRecorder()
+
 			req := httptest.NewRequest(method, path, nil)
+
 			for k, v := range headers {
 				req.Header.Set(k, v)
 			}
+
 			r.ServeHTTP(w, req)
 		}(&wg, tc.method, tc.expectedEvent.Target["path"], tc.headers)
 	}
@@ -407,10 +412,10 @@ func TestCantRegisterMultipleTimesToSamePrometheus(t *testing.T) {
 	t.Parallel()
 
 	var buf strings.Builder
-	ginaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
+	echoaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
 
 	require.Panics(t, func() {
-		ginaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
+		echoaudit.NewJSONMiddleware(comp, &buf).WithPrometheusMetrics()
 	})
 }
 
@@ -434,7 +439,7 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithOutcomeHandler(func(c *gin.Context) string {
+			mdw.WithOutcomeHandler(func(c echo.Context) string {
 				return "custom"
 			})
 			w := httptest.NewRecorder()
@@ -484,7 +489,7 @@ func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithSubjectHandler(func(c *gin.Context) map[string]string {
+			mdw.WithSubjectHandler(func(c echo.Context) map[string]string {
 				return map[string]string{"custom": "customvalue"}
 			})
 			w := httptest.NewRecorder()

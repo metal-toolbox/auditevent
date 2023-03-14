@@ -115,7 +115,7 @@ func (m *Middleware) AuditWithType(t string) echo.MiddlewareFunc {
 
 			// We audit after the request has been processed
 			if err := next(c); err != nil {
-				return err
+				c.Error(err)
 			}
 
 			event := auditevent.NewAuditEventWithID(

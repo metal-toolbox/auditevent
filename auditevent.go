@@ -154,3 +154,9 @@ func (e *AuditEvent) WithDataFromString(data string) *AuditEvent {
 	rawMsg := json.RawMessage(data)
 	return e.WithData(&rawMsg)
 }
+
+// WithProcessArgs sets the process args of the event from a slice of string
+func (e *AuditEvent) WithProcessArgs(args []string) *AuditEvent {
+	e.Metadata.Extra["process_args"] = args
+	return e
+}

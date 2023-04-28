@@ -104,6 +104,16 @@ func OpenAuditLogFileUntilSuccessWithContext(ctx context.Context, path string, l
 	return nil, errors.New("unexpected audit log error")
 }
 
+// OpenOrCreateAuditLogFile attempts to open a file for writing audit events.
+// If the file does not exist, it will be created.
+func OpenOrCreateAuditLogFile(path string) (*os.File, error) {
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_APPEND|os.O_CREATE, ownerGroupAccess)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open audit log file: %w", err)
+	}
+	return f, nil
+}
+
 func newLogger(loggers ...logr.Logger) (logr.Logger, error) {
 	if len(loggers) > 0 {
 		return loggers[0], nil

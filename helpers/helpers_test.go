@@ -21,10 +21,12 @@ import (
 	"path/filepath"
 	"sync"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
 	"github.com/go-logr/zapr"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -212,4 +214,100 @@ func TestOpenAuditLogFileWithLogger(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, int32(2), nlogs, "expected 2 logs. One for the wait and one for the success.")
+}
+
+func TestOpenOrCreateAuditLogFileCreatesFile(t *testing.T) {
+	t.Parallel()
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	fd, err := helpers.OpenOrCreateAuditLogFile(tmpfile)
+	require.NoError(t, err)
+	require.NotNil(t, fd)
+
+	err = fd.Close()
+	require.NoError(t, err)
+
+	finfo, err := os.Stat(tmpfile)
+	assert.NoError(t, err)
+	assert.NotNil(t, finfo)
+	assert.Equal(t, "audit.log", finfo.Name())
+}
+
+func TestOpenOrCreateAuditLogFileOpensFile(t *testing.T) {
+	t.Parallel()
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	fd, err := os.OpenFile(tmpfile, os.O_CREATE, 0o600)
+	require.NoError(t, err)
+	require.NotNil(t, fd)
+
+	err = fd.Close()
+	require.NoError(t, err)
+
+	fd, err = helpers.OpenOrCreateAuditLogFile(tmpfile)
+	require.NoError(t, err)
+	require.NotNil(t, fd)
+
+	err = fd.Close()
+	require.NoError(t, err)
+
+	finfo, err := os.Stat(tmpfile)
+	assert.NoError(t, err)
+	assert.NotNil(t, finfo)
+	assert.Equal(t, "audit.log", finfo.Name())
+}
+
+func TestOpenOrCreateAuditLogFileOpensNamedPipe(t *testing.T) {
+	t.Parallel()
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	err := syscall.Mkfifo(tmpfile, 0o600)
+	require.NoError(t, err)
+
+	// Open pipe reader
+	go func() {
+		fif, err := os.OpenFile(tmpfile, os.O_RDONLY, 0)
+		require.NoError(t, err)
+		require.NotNil(t, fif)
+		t.Cleanup(func() {
+			err := fif.Close()
+			require.NoError(t, err)
+		})
+	}()
+
+	// Open pipe writer
+	fd, err := helpers.OpenOrCreateAuditLogFile(tmpfile)
+	require.NoError(t, err)
+	require.NotNil(t, fd)
+
+	err = fd.Close()
+	require.NoError(t, err)
+
+	finfo, err := os.Stat(tmpfile)
+	assert.NoError(t, err)
+	assert.NotNil(t, finfo)
+	assert.Equal(t, "audit.log", finfo.Name())
+}
+
+func TestOpenOrCreateAuditLogFileError(t *testing.T) {
+	t.Parallel()
+
+	tmpdir := t.TempDir()
+	tmpfile := filepath.Join(tmpdir, "audit.log")
+
+	err := syscall.Mkfifo(tmpfile, 0o000)
+	require.NoError(t, err)
+
+	fd, err := helpers.OpenOrCreateAuditLogFile(tmpfile)
+	require.Error(t, err)
+	require.Nil(t, fd)
+
+	err = os.Remove(tmpfile)
+	require.NoError(t, err)
 }

@@ -54,7 +54,7 @@ This utility will create a named pipe in order to tail the audit log file.`,
 	return c
 }
 
-func tailMain(cmd *cobra.Command, args []string) error {
+func tailMain(cmd *cobra.Command, _ []string) error {
 	//nolint:errcheck // This is already verified by cobra
 	f, _ := cmd.Flags().GetString("file")
 

@@ -28,7 +28,7 @@ const (
 	ownerGroupOwnership = 0o640
 )
 
-func validateCommonArgs(cmd *cobra.Command, args []string) error {
+func validateCommonArgs(cmd *cobra.Command, _ []string) error {
 	f, ferr := cmd.Flags().GetString("file")
 
 	if ferr != nil {

@@ -42,7 +42,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 }
 
-func initTailFile(cmd *cobra.Command, args []string) error {
+func initTailFile(cmd *cobra.Command, _ []string) error {
 	//nolint:errcheck // This is already verified by cobra
 	f, _ := cmd.Flags().GetString("file")
 

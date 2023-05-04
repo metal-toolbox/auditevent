@@ -73,7 +73,7 @@ func SetPipeReader(t *testing.T, namedPipe string) <-chan io.WriteCloser {
 // WriteAuditEvent writes a test audit event to a file.
 func WriteAuditEvent(t *testing.T, f *os.File, i int) {
 	t.Helper()
-	_, err := f.WriteString(fmt.Sprintf("audit-%d\n", i))
+	_, err := fmt.Fprintf(f, "audit-%d\n", i)
 	require.NoError(t, err, "Unexpected error writing audit event")
 }
 

@@ -295,7 +295,7 @@ func TestMiddleware(t *testing.T) {
 
 			r, _ := setFixtures(t, pfd, nil)
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
+			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], http.NoBody)
 			for k, v := range tc.headers {
 				req.Header.Set(k, v)
 			}
@@ -355,7 +355,7 @@ func TestParallelCallsToMiddleware(t *testing.T) {
 
 			w := httptest.NewRecorder()
 
-			req := httptest.NewRequest(method, path, nil)
+			req := httptest.NewRequest(method, path, http.NoBody)
 
 			for k, v := range headers {
 				req.Header.Set(k, v)
@@ -445,7 +445,7 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 				return "custom"
 			})
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
+			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], http.NoBody)
 			for k, v := range tc.headers {
 				req.Header.Set(k, v)
 			}
@@ -495,7 +495,7 @@ func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
 				return map[string]string{"custom": "customvalue"}
 			})
 			w := httptest.NewRecorder()
-			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], nil)
+			req := httptest.NewRequest(tc.method, tc.expectedEvent.Target["path"], http.NoBody)
 			for k, v := range tc.headers {
 				req.Header.Set(k, v)
 			}

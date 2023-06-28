@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/vscode/devcontainers/go:0-1.20-bullseye
+FROM mcr.microsoft.com/vscode/devcontainers/go:1-1.20-bullseye
 
 # [Optional] Uncomment this section to install additional OS packages.
 RUN export DEBIAN_FRONTEND=noninteractive \

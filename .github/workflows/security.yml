@@ -32,7 +32,7 @@ jobs:
           skip-dirs: 'tests'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
 
@@ -52,7 +52,7 @@ jobs:
           acs-report-enable: true
 
       - name: upload Anchore scan SARIF report
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: ${{ always() }}
         with:
           sarif_file: ${{ steps.codescan.outputs.sarif }}

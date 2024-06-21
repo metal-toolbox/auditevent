@@ -44,10 +44,14 @@ which allows us to write audit events.
 
 [Read more.](docs/middleware.md)
 
+### Echo Middleware
+
+Middleware for the [Echo HTTP framework](https://echo.labstack.com/)
+
 ### Metrics
 
 The reference `auditevent` writer and the aforementioned Gin Middleware
-both have prometheus metric support baked in. 
+both have prometheus metric support baked in.
 
 [Read more.](docs/metrics.md)
 

@@ -57,7 +57,7 @@ func TestInit(t *testing.T) {
 
 			c := NewRootCmd()
 			buf := bytes.NewBufferString("")
-			c.SetOutput(buf)
+			c.SetOut(buf)
 			c.AddCommand(NewInitCommand())
 
 			args := tt.args
@@ -97,8 +97,8 @@ func TestInitTailFileFailsIfItCantCreateFIFO(t *testing.T) {
 
 	// Ensure buffered output in both commands
 	buf := bytes.NewBufferString("")
-	c.SetOutput(buf)
-	initCmd.SetOutput(buf)
+	c.SetOut(buf)
+	initCmd.SetOut(buf)
 
 	// Set the arguments
 	args := append([]string{"-f"}, "/foo/bar/")
@@ -122,8 +122,8 @@ func TestInitTailFileFailsToWriteSuccess(t *testing.T) {
 
 	// Create error from output
 	ew := testtools.NewErrorWriter()
-	c.SetOutput(ew)
-	initCmd.SetOutput(ew)
+	c.SetOut(ew)
+	initCmd.SetOut(ew)
 
 	// Set the arguments
 	tmpDir := t.TempDir()
@@ -143,7 +143,7 @@ func TestInitSucceedsEvenIfFileAlreadyExists(t *testing.T) {
 
 	c := NewRootCmd()
 	buf := bytes.NewBufferString("")
-	c.SetOutput(buf)
+	c.SetOut(buf)
 	c.AddCommand(NewInitCommand())
 
 	args := []string{"init", "-f"}

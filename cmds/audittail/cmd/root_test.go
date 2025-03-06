@@ -35,7 +35,7 @@ func TestTailWithoutArguments(t *testing.T) {
 
 	c := NewRootCmd()
 	buf := bytes.NewBufferString("")
-	c.SetOutput(buf)
+	c.SetOut(buf)
 
 	args := []string{}
 
@@ -52,7 +52,7 @@ func TestTailHappyPath(t *testing.T) {
 
 	// initialize concurrent safe reader and writer
 	reader, writer := io.Pipe()
-	c.SetOutput(writer)
+	c.SetOut(writer)
 
 	var path string
 
@@ -112,7 +112,7 @@ func TestRootFailsCreatingNamedPipe(t *testing.T) {
 
 	// Ensure buffered output in both commands
 	buf := bytes.NewBufferString("")
-	c.SetOutput(buf)
+	c.SetOut(buf)
 
 	// create audit file
 	tmpDir := t.TempDir()
@@ -147,7 +147,7 @@ func TestRootFailsCreatingTailer(t *testing.T) {
 
 	// Ensure buffered output in both commands
 	buf := bytes.NewBufferString("")
-	c.SetOutput(buf)
+	c.SetOut(buf)
 
 	// create audit file
 	tmpDir := t.TempDir()

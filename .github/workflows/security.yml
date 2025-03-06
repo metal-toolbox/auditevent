@@ -45,7 +45,7 @@ jobs:
       
       - name: Scan current project
         id: codescan
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v6
         with:
           path: "."
           severity-cutoff: high

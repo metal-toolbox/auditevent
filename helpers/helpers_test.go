@@ -193,7 +193,7 @@ func TestOpenAuditLogFileWithLogger(t *testing.T) {
 
 	var nlogs int32
 
-	z, err := zap.NewDevelopment(zap.Hooks(func(e zapcore.Entry) error {
+	z, err := zap.NewDevelopment(zap.Hooks(func(zapcore.Entry) error {
 		atomic.AddInt32(&nlogs, 1)
 		return nil
 	}))

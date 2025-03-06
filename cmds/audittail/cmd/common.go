@@ -36,7 +36,7 @@ func validateCommonArgs(cmd *cobra.Command, _ []string) error {
 	}
 
 	if f == "" {
-		return fmt.Errorf("--file is required")
+		return ErrFileRequired
 	}
 
 	return nil

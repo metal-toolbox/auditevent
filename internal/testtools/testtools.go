@@ -125,5 +125,5 @@ func NewErrorWriter() io.Writer {
 }
 
 func (e *ErrorWriter) Write(_ []byte) (n int, err error) {
-	return 0, fmt.Errorf("error")
+	return 0, fmt.Errorf("error") //nolint:err113 //test
 }

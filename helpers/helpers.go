@@ -32,6 +32,9 @@ const (
 	retryInterval    = 100 * time.Millisecond
 )
 
+// ErrUnexpectedAuditLog is returned when an unexpected error occurs while opening the audit log file.
+var ErrUnexpectedAuditLog = errors.New("unexpected audit log error")
+
 // OpenAuditLogFileUntilSuccess attempts to open a file for writing audit events until
 // it succeeds.
 // It assumes that audit events are less than 4096 bytes to ensure atomicity.
@@ -101,7 +104,7 @@ func OpenAuditLogFileUntilSuccessWithContext(ctx context.Context, path string, l
 		return fd, nil
 	}
 
-	return nil, errors.New("unexpected audit log error")
+	return nil, ErrUnexpectedAuditLog
 }
 
 // OpenOrCreateAuditLogFile attempts to open a file for writing audit events.

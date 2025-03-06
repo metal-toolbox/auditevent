@@ -172,7 +172,7 @@ func TestRootFailsCreatingTailer(t *testing.T) {
 type errorReader struct{}
 
 func (e *errorReader) Read(_ []byte) (n int, err error) {
-	return 0, fmt.Errorf("error")
+	return 0, fmt.Errorf("error") //nolint:err113 //test
 }
 
 func TestFileTrailerUnknownErrorWhenTailing(t *testing.T) {

@@ -279,7 +279,6 @@ func TestMiddleware(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range getTestCases() {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			p := testtools.GetNamedPipe(t)
@@ -426,7 +425,6 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range getTestCases() {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			p := testtools.GetNamedPipe(t)
@@ -476,7 +474,6 @@ func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
 	t.Parallel()
 
 	for _, tc := range getTestCases() {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			p := testtools.GetNamedPipe(t)

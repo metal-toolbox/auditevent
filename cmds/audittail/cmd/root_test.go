@@ -77,7 +77,7 @@ func TestTailHappyPath(t *testing.T) {
 	}()
 
 	// Allow for cancellation
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	// Run command concurrently... this will block until we cancel it
 	ech := make(chan error)
@@ -187,7 +187,7 @@ func TestFileTrailerUnknownErrorWhenTailing(t *testing.T) {
 
 	// trying to tail a reader that returns an unknown error should
 	// return immediately and should also surface the error
-	err := ft.tailFile(context.Background())
+	err := ft.tailFile(t.Context())
 	require.Error(t, err, "unexpected success")
 }
 

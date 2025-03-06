@@ -118,7 +118,6 @@ func TestEventIsSuccessfullyWritten(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			nppath := testtools.GetNamedPipe(t)

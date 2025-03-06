@@ -84,7 +84,7 @@ func TestOpenAuditLogFileUntilSuccessWithContext(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(context.TODO(), tmpfile)
+	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(t.Context(), tmpfile)
 	require.NoError(t, err)
 	require.NotNil(t, fd)
 
@@ -101,7 +101,7 @@ func TestOpenAuditLogFileUntilSuccessWithContext(t *testing.T) {
 func TestOpenAuditLogFileUntilSuccessWithContextClosed(t *testing.T) {
 	t.Parallel()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 
 	go func(c context.CancelFunc) {
 		time.Sleep(time.Second)
@@ -132,7 +132,7 @@ func TestOpenAuditLogFileUntilSuccessWithContextError(t *testing.T) {
 		require.NoError(t, err)
 	}()
 
-	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(context.TODO(), tmpfile)
+	fd, err := helpers.OpenAuditLogFileUntilSuccessWithContext(t.Context(), tmpfile)
 	require.Error(t, err)
 	require.Nil(t, fd)
 

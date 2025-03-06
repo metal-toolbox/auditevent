@@ -434,7 +434,7 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithOutcomeHandler(func(c *gin.Context) string {
+			mdw.WithOutcomeHandler(func(*gin.Context) string {
 				return "custom"
 			})
 			w := httptest.NewRecorder()
@@ -484,7 +484,7 @@ func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithSubjectHandler(func(c *gin.Context) map[string]string {
+			mdw.WithSubjectHandler(func(*gin.Context) map[string]string {
 				return map[string]string{"custom": "customvalue"}
 			})
 			w := httptest.NewRecorder()

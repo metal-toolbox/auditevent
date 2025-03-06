@@ -1,7 +1,7 @@
 ---
 run:
   concurrency: 6
-  deadline: 5m
+  timeout: 5m
   build-tags:
     - testtools
 
@@ -26,7 +26,7 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - forcetypeassert
     - gci
     - gochecknoinits
@@ -36,12 +36,12 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
+    - err113
     - gofmt
     - gofumpt
     - goheader
     - goimports
-    - gomnd
+    - mnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
@@ -70,7 +70,7 @@ linters:
     - staticcheck
     - stylecheck
     - tagliatelle
-    - tenv
+    - usetesting
     - thelper
     - tparallel
     - typecheck
@@ -113,38 +113,21 @@ linters-settings:
   gocritic:
     enabled-checks:
       # Diagnostic
-      - appendAssign
-      - argOrder
-      - badCall
-      - badCond
       - badLock
       - badRegexp
       - badSorting
       - builtinShadowDecl
-      - caseOrder
-      - codegenComment
       - commentedOutCode
       - deferInLoop
-      - deprecatedComment
-      - dupArg
-      - dupBranchBody
-      - dupCase
-      - dupSubExpr
       - dynamicFmtString
       - emptyDecl
       - evalOrder
-      - exitAfterDefer
       - externalErrorReassign
       - filepathJoin
-      - flagDeref
-      - flagName
-      - mapKey
       - nilValReturn
-      - offBy1
       - regexpPattern
       - returnAfterHttpError
       - sloppyReassign
-      - sloppyTypeAssert
       - sortSlice
       - sprintfQuotedString
       - sqlQuery
@@ -168,46 +151,29 @@ linters-settings:
       - stringXbytes
 
       # Style
-      - assignOp
       - boolExprSimplify
-      - captLocal
-      - commentFormatting
       - commentedOutImport
-      - defaultCaseOrder
       - deferUnlambda
       - docStub
       - dupImport
-      - elseif
       - emptyFallthrough
       - emptyStringTest
       - exposedSyncMutex
       - hexLiteral
       - httpNoBody
-      - ifElseChain
       - methodExprCall
-      - newDeref
       - octalLiteral
       - preferFilepathJoin
       - redundantSprint
-      - regexpMust
       - regexpSimplify
       - ruleguard
-      - singleCaseSwitch
-      - sloppyLen
       - stringConcatSimplify
-      - switchTrue
       - timeExprSimplify
       - tooManyResultsChecker
       - typeAssertChain
       - typeDefFirst
-      - typeSwitchVar
-      - underef
       - unlabelStmt
-      - unlambda
-      - unslice
-      - valSwap
       - whyNoLint
-      - wrapperFunc
       - yodaStyleExpr
 
       # Opinionated

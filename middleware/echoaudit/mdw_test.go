@@ -224,8 +224,8 @@ func setFixtures(t *testing.T, w io.Writer, pr prometheus.Registerer) (*echo.Ech
 
 	// Writing to `fails-with-user-header` breaks the app
 	r.POST("/fails-with-user-header",
-		func(ctx echo.Context) error {
-			return errors.New("boom")
+		func(echo.Context) error {
+			return errors.New("boom") //nolint:err113 //test
 		},
 		mdw.AuditWithType("AlwaysBreaks"),
 	)
@@ -441,7 +441,7 @@ func TestMiddlewareWithCustomOutcomeHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithOutcomeHandler(func(c echo.Context) string {
+			mdw.WithOutcomeHandler(func(echo.Context) string {
 				return "custom"
 			})
 			w := httptest.NewRecorder()
@@ -491,7 +491,7 @@ func TestMiddlewareWithCustomSubjectHandler(t *testing.T) {
 			defer pfd.Close()
 
 			r, mdw := setFixtures(t, pfd, nil)
-			mdw.WithSubjectHandler(func(c echo.Context) map[string]string {
+			mdw.WithSubjectHandler(func(echo.Context) map[string]string {
 				return map[string]string{"custom": "customvalue"}
 			})
 			w := httptest.NewRecorder()

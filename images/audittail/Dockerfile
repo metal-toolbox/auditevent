@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.24 as build-env
+FROM docker.io/library/golang:1.27 as build-env
 
 WORKDIR /go/src/audittail
 
